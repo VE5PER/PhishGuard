@@ -1,0 +1,130 @@
+# ---------------------------------------------------------------------------
+# PhishGuard — Dokploy compose stack (managed DB/Redis)
+#
+#   gateway : FastAPI escalation gateway (apps/backend/Dockerfile)
+#
+# Postgres and Redis are NOT defined here. They are provisioned as Dokploy
+# managed services on `dokploy-network` and reached via env:
+#   DATABASE_URL=postgresql://phishguard:***@phishguard-db-tpalba:5432/phishguard
+#   REDIS_URL=redis://:***@phishguard-redis-pto1ma:6379/0
+#
+# Artifact storage is powered by RustFS, hosted externally on a separate system
+# and accessed via RUSTFS_ENDPOINT_URL.
+#
+# MULTI-ENVIRONMENT: this one file is reused per environment. Compose reads the
+# environment-specific `.env` for ${...} interpolation. HOST port == CONTAINER
+# port and is unique per env, so branches never collide:
+#   dev-1 -> 8010, dev-2 -> 8020, prod -> 8000
+#
+# Templates: deploy/env/.env.<env>.example  (see deploy/README.md)
+# The extension is NOT part of this stack — Chrome MV3 client, see
+# apps/extension/Dockerfile as a SEPARATE Dokploy app.
+# ---------------------------------------------------------------------------
+name: ${COMPOSE_PROJECT_NAME:-phishguard}
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      args:
+        BACKEND_URL: "${BACKEND_URL:-${GATEWAY_DOMAIN:-}}"
+        GATEWAY_DOMAIN: "${GATEWAY_DOMAIN:-}"
+        STUDENT_MODEL_URL: "${STUDENT_MODEL_URL:-}"
+      secrets:
+        - EXTENSION_SIGNING_KEY_B64
+    image: ${GATEWAY_IMAGE:-phishguard/gateway:local}
+    restart: unless-stopped
+    mem_limit: 2g
+    environment:
+      PYTHONUNBUFFERED: "1"
+      # ENV_NAME is the short environment id (dev-1 | dev-2 | prod).
+      ENV_NAME: "${ENV_NAME:-prod}"
+      # Container listens on this port AND it is published on the same host port.
+      PORT: "${GATEWAY_PORT:-8000}"
+      ENVIRONMENT: "${ENVIRONMENT:-production}"
+      AUTH_DEV_MODE: "${AUTH_DEV_MODE:-false}"
+      # Dokploy-managed datastores (required). Bare `postgresql://` is rewritten
+      # to `postgresql+asyncpg://` by db/database.py; never use +psycopg here.
+      DATABASE_URL: "${DATABASE_URL:?set DATABASE_URL in .env}"
+      REDIS_URL: "${REDIS_URL:-}"
+      STATIC_DIR: "${STATIC_DIR:-/app/apps/backend/static}"
+      # RustFS S3-compatible artifact storage (hosted externally)
+      RUSTFS_ENDPOINT_URL: "${RUSTFS_ENDPOINT_URL:-http://rustfs:9000}"
+      RUSTFS_ACCESS_KEY: "${RUSTFS_ACCESS_KEY:-rustfsadmin}"
+      RUSTFS_SECRET_KEY: "${RUSTFS_SECRET_KEY:-rustfsadmin}"
+      RUSTFS_BUCKET: "${RUSTFS_BUCKET:-phishguard-artifacts}"
+      RUSTFS_REGION: "${RUSTFS_REGION:-us-east-1}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+      GEMINI_TEACHER_ENABLED: "${GEMINI_TEACHER_ENABLED:-true}"
+      GEMINI_TEACHER_MODEL: "${GEMINI_TEACHER_MODEL:-gemini-3.5-flash-lite}"
+      GEMINI_TEACHER_TIMEOUT_S: "${GEMINI_TEACHER_TIMEOUT_S:-8}"
+      GEMINI_TEACHER_MAX_CALLS_PER_HOUR: "${GEMINI_TEACHER_MAX_CALLS_PER_HOUR:-200}"
+      GOOGLE_GENAI_USE_VERTEXAI: "${GOOGLE_GENAI_USE_VERTEXAI:-}"
+      GOOGLE_CLOUD_PROJECT: "${GOOGLE_CLOUD_PROJECT:-}"
+      GOOGLE_CLOUD_LOCATION: "${GOOGLE_CLOUD_LOCATION:-}"
+    ports:
+      - "${GATEWAY_PORT:-8000}:${GATEWAY_PORT:-8000}"
+    networks:
+      - dokploy-network
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('PORT', '8000') + '/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # One-shot dataset aggregation worker. Dormant: only starts via the
+  # `dataset-agent` compose profile, e.g.
+  #   docker compose --profile dataset-agent run --rm dataset-agent
+  dataset-agent:
+    build:
+      context: .
+      dockerfile: apps/dataset-agent/Dockerfile
+    image: ${DATASET_AGENT_IMAGE:-phishguard/dataset-agent:local}
+    profiles:
+      - dataset-agent
+    restart: "no"
+    command: ["phishguard-dataset-agent", "run-once"]
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ENV_NAME: "${ENV_NAME:-prod}"
+      DATASET_AGENT_OUTPUT_DIR: "${DATASET_AGENT_OUTPUT_DIR:-/app/data/daily_datasets}"
+      DATASET_AGENT_LIFECYCLE_DIR: "${DATASET_AGENT_LIFECYCLE_DIR:-/app/data/phishguard_daily_aggregated}"
+      DATASET_AGENT_SEARCH_PROVIDER: "${DATASET_AGENT_SEARCH_PROVIDER:-auto}"
+      DATASET_AGENT_SAMPLE_TARGET: "${DATASET_AGENT_SAMPLE_TARGET:-100}"
+      DATASET_AGENT_EXPORT_LIFECYCLE: "${DATASET_AGENT_EXPORT_LIFECYCLE:-true}"
+      DATASET_AGENT_FEED_SOURCES: "${DATASET_AGENT_FEED_SOURCES:-openphish,tranco}"
+      DATASET_AGENT_TRANCO_TOP_N: "${DATASET_AGENT_TRANCO_TOP_N:-10000}"
+      DATASET_AGENT_FETCH_FEED_PAGES: "${DATASET_AGENT_FETCH_FEED_PAGES:-false}"
+      DATASET_AGENT_FETCH_CONCURRENCY: "${DATASET_AGENT_FETCH_CONCURRENCY:-8}"
+      DATASET_AGENT_DEEP_RESEARCH_ENABLED: "${DATASET_AGENT_DEEP_RESEARCH_ENABLED:-false}"
+      DATASET_AGENT_DEEP_RESEARCH_AGENT: "${DATASET_AGENT_DEEP_RESEARCH_AGENT:-deep-research-preview-04-2026}"
+      DATASET_AGENT_DEEP_RESEARCH_TASKS: "${DATASET_AGENT_DEEP_RESEARCH_TASKS:-1}"
+      DATASET_AGENT_DEEP_RESEARCH_TIMEOUT_SECONDS: "${DATASET_AGENT_DEEP_RESEARCH_TIMEOUT_SECONDS:-1800}"
+      DATASET_AGENT_DEEP_RESEARCH_MAX_URLS: "${DATASET_AGENT_DEEP_RESEARCH_MAX_URLS:-50}"
+      DATASET_AGENT_EXTRACTION_MODEL: "${DATASET_AGENT_EXTRACTION_MODEL:-gemini-3.6-flash}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+    volumes:
+      - dataset_data:/app/data
+    networks:
+      - dokploy-network
+
+volumes:
+  dataset_data:
+
+secrets:
+  # base64 of the CRX signing PEM (BuildKit secret; never stored in the image).
+  EXTENSION_SIGNING_KEY_B64:
+    environment: EXTENSION_SIGNING_KEY_B64
+
+networks:
+  # Dokploy installs Traefik and the managed databases here.
+  dokploy-network:
+    external: true

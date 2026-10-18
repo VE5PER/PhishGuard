@@ -1,0 +1,46 @@
+# VCS / OS
+**/.git
+**/.gitignore
+**/.DS_Store
+**/Thumbs.db
+
+# Node / pnpm
+**/node_modules
+**/.pnpm-store
+**/*.tsbuildinfo
+
+# Python
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+
+# Build output (extension rebuilds its own)
+**/dist
+**/build
+apps/backend/static
+
+# ML artifacts (never bake weights into the gateway image)
+**/*.onnx
+!apps/extension/public/models/student_model.onnx
+!apps/backend/models/v2*/student_model.onnx
+**/*.pt
+**/*.pth
+**/*.bin
+
+# Signing keys (supplied to the extension build as a BuildKit secret)
+**/*.pem
+**/checkpoints
+
+# Secrets & local overrides
+.env
+.env.local
+**/.env
+**/.env.local
+
+# Editor
+**/.vscode
+.agents

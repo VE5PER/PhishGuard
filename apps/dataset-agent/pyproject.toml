@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phishguard-dataset-agent"
+version = "0.1.0"
+description = "Autonomous Daily Web Search and Multimodal Dataset Aggregator Agent for PhishGuard"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.25.0",
+    "pydantic>=2.0.0",
+    "numpy",
+    "pillow",
+    "google-genai>=2.28.0,<3",
+    "google-adk==2.11.0",
+    "phishguard-types",
+    "phishguard-ml-engine",
+    "phishguard-ml-lifecycle",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+phishguard-dataset-agent = "phishguard_dataset_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+phishguard_dataset_agent = ["*.json", "*.csv", "*/*.json", "*/*.csv", "*/*/*.json", "*/*/*.csv"]

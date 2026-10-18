@@ -1,0 +1,27 @@
+{
+  "name": "@phishguard/extension",
+  "version": "0.5.18",
+  "private": true,
+  "description": "PhishGuard Browser Extension (On-Device Inference & Telemetry)",
+  "type": "module",
+  "scripts": {
+    "build": "node ../../scripts/bump-version.mjs && vite build && vite build --mode content-script",
+    "rebuild": "node ../../scripts/bump-version.mjs --force && vite build && vite build --mode content-script",
+    "dev": "node scripts/watch-builds.mjs",
+    "test": "vite build --mode content-script && tsx --test tests/test_backend_url_config.ts tests/test_analysis_presentation.ts tests/test_model_presentation.ts tests/test_vision_recovery.ts tests/test_startup_initialization.ts tests/test_onnx_engine.ts tests/test_runtime_feature_contract.ts tests/test_telemetry_collector.ts tests/test_tab_analysis_state.ts tests/test_model_sync.ts tests/test_sqlite_storage.ts tests/test_settings.ts tests/test_extension_update.ts tests/test_manual_escalation.ts tests/test_notification_actions.ts tests/test_vision.ts tests/test_warning_presentation.ts tests/test_live_sample_pages.ts tests/test_exported_sample_pages.ts tests/test_content_script_build.ts tests/test_popup.ts tests/test_request_tab_evaluation.ts tests/test_displayed_brands.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@phishguard/types": "workspace:*",
+    "onnxruntime-web": "^1.17.0",
+    "sql.js": "^1.14.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "@types/node": "24.10.1",
+    "@types/sql.js": "^1.4.11",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.8"
+  }
+}

@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-labelledby="title desc">
+  <title id="title">PhishGuard architecture</title>
+  <desc id="desc">Three on-page signals feed an on-device INT8 student model in the extension. Tri-state routing keeps safe pages silent, blocks dangerous ones locally, and lets the user ask a Gemini ADK agent on Cloud Run for a second opinion on ambiguous pages. A cloud learning loop discovers, teaches, distills and ships verified model updates.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#C6F432"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#FFFFFF" fill-opacity="0.5"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#FFB224"/>
+    </marker>
+    <linearGradient id="riskBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C6F432"/>
+      <stop offset="0.5" stop-color="#FFB224"/>
+      <stop offset="1" stop-color="#FF5A46"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.75" cy="0.35" r="0.55">
+      <stop offset="0" stop-color="#C6F432" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#C6F432" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <style>
+    .mono { font-family: 'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace; }
+    .sans { font-family: 'Space Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+    .body { font-family: Manrope, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+    .eyebrow { font-size: 12px; letter-spacing: 2.2px; fill: #C6F432; }
+    .h { font-size: 19px; font-weight: 700; fill: #FFFFFF; }
+    .t { font-size: 15px; font-weight: 700; fill: #FFFFFF; }
+    .s { font-size: 13px; fill: #FFFFFF; fill-opacity: 0.62; }
+    .xs { font-size: 11px; fill: #FFFFFF; fill-opacity: 0.55; }
+    .panel { fill: #0E1012; stroke: #FFFFFF; stroke-opacity: 0.10; }
+    .card { fill: #08090A; stroke: #FFFFFF; stroke-opacity: 0.12; }
+    .wire { fill: none; stroke: #C6F432; stroke-width: 1.6; }
+  </style>
+
+  <rect width="1280" height="800" fill="#08090A"/>
+  <rect width="1280" height="800" fill="url(#glow)"/>
+
+  <text x="40" y="52" class="mono eyebrow">ARCHITECTURE</text>
+  <text x="40" y="92" class="sans" font-size="28" font-weight="700" fill="#FFFFFF" letter-spacing="-0.5">Three signals. One verdict. A second opinion only when it matters.</text>
+
+  <!-- A: Web page signals -->
+  <rect x="40" y="130" width="270" height="430" rx="16" class="panel"/>
+  <text x="62" y="162" class="mono eyebrow">THE PAGE</text>
+  <text x="62" y="190" class="sans h">What PhishGuard reads</text>
+
+  <rect x="56" y="214" width="238" height="100" rx="12" class="card"/>
+  <text x="74" y="244" class="mono" font-size="12" fill="#C6F432">01</text>
+  <text x="100" y="244" class="sans t">Interaction</text>
+  <text x="74" y="270" class="body s">Cursor path, typing rhythm</text>
+  <text x="74" y="292" class="mono xs">timing only, never keys</text>
+
+  <rect x="56" y="326" width="238" height="100" rx="12" class="card"/>
+  <text x="74" y="356" class="mono" font-size="12" fill="#C6F432">02</text>
+  <text x="100" y="356" class="sans t">Page structure</text>
+  <text x="74" y="382" class="body s">Hidden overlays, frames</text>
+  <text x="74" y="404" class="mono xs">look-alike domains</text>
+
+  <rect x="56" y="438" width="238" height="100" rx="12" class="card"/>
+  <text x="74" y="468" class="mono" font-size="12" fill="#C6F432">03</text>
+  <text x="100" y="468" class="sans t">Vision</text>
+  <text x="74" y="494" class="body s">Logo vs domain, layout</text>
+  <text x="74" y="516" class="mono xs">64×64, in memory only</text>
+
+  <path d="M310 345 H346" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- B: Extension -->
+  <rect x="350" y="130" width="280" height="430" rx="16" class="panel"/>
+  <text x="372" y="162" class="mono eyebrow">CHROME EXTENSION · MV3</text>
+  <text x="372" y="190" class="sans h">On-device verdict</text>
+
+  <rect x="366" y="214" width="248" height="92" rx="12" class="card" stroke="#C6F432" stroke-opacity="0.45"/>
+  <text x="384" y="244" class="sans t">INT8 student model</text>
+  <text x="384" y="268" class="body s">ONNX Runtime Web</text>
+  <text x="384" y="290" class="mono xs">WebGPU · WASM fallback</text>
+
+  <text x="366" y="334" class="mono xs">FUSED RISK SCORE</text>
+  <rect x="366" y="344" width="248" height="8" rx="4" fill="url(#riskBar)"/>
+  <line x1="403" y1="340" x2="403" y2="356" stroke="#FFFFFF" stroke-opacity="0.7"/>
+  <line x1="577" y1="340" x2="577" y2="356" stroke="#FFFFFF" stroke-opacity="0.7"/>
+  <text x="403" y="370" class="mono xs" text-anchor="middle">0.15</text>
+  <text x="577" y="370" class="mono xs" text-anchor="middle">0.85</text>
+
+  <rect x="366" y="384" width="248" height="50" rx="10" class="card"/>
+  <circle cx="384" cy="403" r="4.5" fill="#C6F432"/>
+  <text x="396" y="407" class="mono" font-size="12" font-weight="700" fill="#C6F432">SAFE</text>
+  <text x="396" y="424" class="mono xs">&lt; 0.15</text>
+  <text x="486" y="414" class="body" font-size="12" fill="#FFFFFF" fill-opacity="0.75">Silent, no network</text>
+
+  <rect x="366" y="442" width="248" height="50" rx="10" class="card" stroke="#FFB224" stroke-opacity="0.55"/>
+  <circle cx="384" cy="461" r="4.5" fill="#FFB224"/>
+  <text x="396" y="465" class="mono" font-size="12" font-weight="700" fill="#FFB224">AMBIGUOUS</text>
+  <text x="396" y="482" class="mono xs">0.15 – 0.85</text>
+  <text x="486" y="472" class="body" font-size="12" fill="#FFFFFF" fill-opacity="0.75">Flag, opt-in check</text>
+
+  <rect x="366" y="500" width="248" height="50" rx="10" class="card"/>
+  <circle cx="384" cy="519" r="4.5" fill="#FF5A46"/>
+  <text x="396" y="523" class="mono" font-size="12" font-weight="700" fill="#FF5A46">BLOCK</text>
+  <text x="396" y="540" class="mono xs">&gt; 0.85</text>
+  <text x="486" y="530" class="body" font-size="12" fill="#FFFFFF" fill-opacity="0.75">Freeze the page</text>
+
+  <!-- B <-> C -->
+  <path d="M614 467 H716" fill="none" stroke="#FFB224" stroke-width="1.6" marker-end="url(#arrowAmber)"/>
+  <text x="667" y="456" class="mono" font-size="11" fill="#FFB224" text-anchor="middle">opt-in</text>
+  <path d="M720 526 H618" fill="none" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#arrowMuted)"/>
+  <text x="667" y="544" class="mono xs" text-anchor="middle">verdict</text>
+
+  <!-- C: Cloud Run gateway -->
+  <rect x="720" y="130" width="520" height="430" rx="16" class="panel" stroke="#C6F432" stroke-opacity="0.25"/>
+  <text x="742" y="162" class="mono eyebrow">GOOGLE CLOUD RUN · GATEWAY</text>
+  <text x="742" y="190" class="sans h">Second opinion, only when you ask</text>
+
+  <rect x="736" y="210" width="488" height="50" rx="10" class="card"/>
+  <text x="754" y="232" class="sans t">Reputation &amp; verdict cache</text>
+  <text x="754" y="250" class="mono xs">known hosts answer fast</text>
+
+  <path d="M824 260 V282" class="wire" stroke-opacity="0.7" marker-end="url(#arrow)"/>
+  <path d="M1074 260 V282" class="wire" stroke-opacity="0.7" marker-end="url(#arrow)"/>
+
+  <rect x="736" y="286" width="176" height="150" rx="10" class="card"/>
+  <text x="754" y="314" class="sans t">Evidence policy v2</text>
+  <text x="754" y="338" class="body s">Deterministic rules</text>
+  <text x="754" y="360" class="body s">over the same signals</text>
+  <text x="754" y="398" class="mono xs">also the fallback when</text>
+  <text x="754" y="416" class="mono xs">Gemini is unavailable</text>
+
+  <rect x="924" y="286" width="300" height="150" rx="10" class="card" stroke="#C6F432" stroke-opacity="0.6"/>
+  <text x="942" y="314" class="sans t">Gemini ADK agent</text>
+  <text x="942" y="336" class="mono xs">grounded in PhishGuard data</text>
+  <rect x="940" y="348" width="268" height="26" rx="13" fill="#C6F432" fill-opacity="0.08" stroke="#C6F432" stroke-opacity="0.4"/>
+  <text x="954" y="365" class="mono" font-size="11" fill="#C6F432">Official brand domains</text>
+  <rect x="940" y="382" width="268" height="26" rx="13" fill="#C6F432" fill-opacity="0.08" stroke="#C6F432" stroke-opacity="0.4"/>
+  <text x="954" y="399" class="mono" font-size="11" fill="#C6F432">Past verdicts</text>
+  <text x="942" y="426" class="mono xs">screenshot only with your consent</text>
+
+  <path d="M824 436 V448" class="wire" stroke-opacity="0.7"/>
+  <path d="M1074 436 V448" class="wire" stroke-opacity="0.7"/>
+
+  <rect x="736" y="452" width="488" height="44" rx="10" class="card"/>
+  <text x="754" y="479" class="sans t">Code-enforced safety rails</text>
+  <text x="1206" y="479" class="mono xs" text-anchor="end">Gemini can't overrule hard evidence</text>
+
+  <path d="M980 496 V504" class="wire" stroke-opacity="0.7"/>
+
+  <rect x="736" y="506" width="488" height="40" rx="10" fill="#C6F432" fill-opacity="0.08" stroke="#C6F432" stroke-opacity="0.5"/>
+  <text x="754" y="531" class="mono" font-size="12" fill="#C6F432">VERDICT  ALLOW · WARN · BLOCK  + reasons</text>
+
+  <!-- Model update path -->
+  <path d="M1093 640 V575 H490 V564" fill="none" stroke="#C6F432" stroke-width="1.4" stroke-dasharray="5 5" marker-end="url(#arrow)"/>
+  <rect x="740" y="566" width="196" height="18" fill="#08090A"/>
+  <text x="838" y="579" class="mono" font-size="11" fill="#C6F432" text-anchor="middle">verified model update</text>
+
+  <!-- Learning loop -->
+  <rect x="40" y="600" width="1200" height="170" rx="16" class="panel"/>
+  <text x="62" y="628" class="mono eyebrow">LEARNING LOOP · LEARNS IN THE CLOUD, SHIPS TO THE BROWSER</text>
+
+  <rect x="56" y="644" width="262" height="108" rx="12" class="card"/>
+  <text x="74" y="674" class="mono" font-size="12" fill="#C6F432">01</text>
+  <text x="100" y="674" class="sans t">Discover</text>
+  <text x="74" y="700" class="body s">Dataset agent, daily sweep</text>
+  <text x="74" y="724" class="mono xs">Gemini Deep Research</text>
+
+  <rect x="358" y="644" width="262" height="108" rx="12" class="card"/>
+  <text x="376" y="674" class="mono" font-size="12" fill="#C6F432">02</text>
+  <text x="402" y="674" class="sans t">Learn</text>
+  <text x="376" y="700" class="body s">Multimodal cloud teacher</text>
+  <text x="376" y="724" class="mono xs">vision + structure + behavior</text>
+
+  <rect x="660" y="644" width="262" height="108" rx="12" class="card"/>
+  <text x="678" y="674" class="mono" font-size="12" fill="#C6F432">03</text>
+  <text x="704" y="674" class="sans t">Distill</text>
+  <text x="678" y="700" class="body s">INT8 ONNX student</text>
+  <text x="678" y="724" class="mono xs">small enough for the browser</text>
+
+  <rect x="962" y="644" width="262" height="108" rx="12" class="card" stroke="#C6F432" stroke-opacity="0.45"/>
+  <text x="980" y="674" class="mono" font-size="12" fill="#C6F432">04</text>
+  <text x="1006" y="674" class="sans t">Deliver</text>
+  <text x="980" y="700" class="body s">Quiet model update</text>
+  <text x="980" y="724" class="mono xs">verified before it loads</text>
+
+  <path d="M318 698 H354" class="wire" marker-end="url(#arrow)"/>
+  <path d="M620 698 H656" class="wire" marker-end="url(#arrow)"/>
+  <path d="M922 698 H958" class="wire" marker-end="url(#arrow)"/>
+</svg>

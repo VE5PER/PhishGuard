@@ -1,0 +1,93 @@
+{
+  "version": "2.0.0",
+  "name": "phishguard-student-context-v2",
+  "architecture": "Behavioral CNN/LSTM + visual encoder + page context",
+  "sha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+  "fileSizeBytes": 167327,
+  "releasedAt": "2026-10-13T08:59:23.633867Z",
+  "minExtensionVersion": "0.5.0",
+  "features": [
+    "x",
+    "y",
+    "dx",
+    "dy",
+    "v",
+    "theta",
+    "viewport_rgb_64",
+    "page_context_16"
+  ],
+  "metrics": {
+    "accuracy": 1.0,
+    "f1Score": 1.0,
+    "latencyMs": 0.4203819462922044,
+    "memoryBudgetMb": 189.84375
+  },
+  "changelog": [
+    "Student-v2 context model replaces v1.5.0, whose score tracked page brightness instead of interaction evidence",
+    "Transport-invariant student-v2 with canonical trajectory preprocessing and versioned page context",
+    "Offline repository-synthetic validation only; no population false-positive claim",
+    "RAM figure is measured Chrome MV3 service-worker peak RSS (whole worker process, includes Chromium overhead)"
+  ],
+  "downloadUrl": "/v1/models/2.0.0/download",
+  "inputContract": {
+    "contextFeatures": [
+      "url_userinfo",
+      "hostname_brand_mismatch",
+      "path_query_brand_mention",
+      "credential_present",
+      "credential_overlay",
+      "submit_overlay",
+      "other_overlay",
+      "observed_cross_origin_credential",
+      "unverified_cross_origin_frame",
+      "password_paste",
+      "pointer_coverage",
+      "duration_coverage",
+      "trajectory_available",
+      "visual_available",
+      "page_context_available",
+      "https"
+    ],
+    "identifier": "student-v2",
+    "inputs": [
+      {
+        "dtype": "float32",
+        "name": "trajectory",
+        "shape": [
+          128,
+          6
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "visual",
+        "shape": [
+          3,
+          64,
+          64
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "page_context",
+        "shape": [
+          16
+        ]
+      }
+    ],
+    "trajectoryPreprocessing": "normalized-coordinate-derivatives-index-linear-v2"
+  },
+  "validationSummary": {
+    "passedAllGates": true,
+    "modelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+    "corpusDigest": "f8deda9d5d797993a3c59fe6c8230e690202b2d406d0002c767cbbb740be4645",
+    "reportSha256": "108010413752248bf5ea86b47e28e26a4a4e0976795f10452d21af2bbc0c4702",
+    "inputContractIdentifier": "student-v2",
+    "policyVersion": "evidence-v2",
+    "basis": "repository_synthetic",
+    "falsePositiveRate": 0.0,
+    "benignWarningCount": 0,
+    "criticalMissCount": 0,
+    "independentTestGroups": 9
+  }
+}

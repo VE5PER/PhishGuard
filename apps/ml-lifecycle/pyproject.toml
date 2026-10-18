@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phishguard-ml-lifecycle"
+version = "0.1.0"
+description = "Machine Learning Training Lifecycle, Checkpoint Management, and Model Promotion for PhishGuard"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch",
+    "numpy",
+    "pydantic>=2.0.0",
+    "phishguard-types",
+    "phishguard-ml-engine",
+    "onnx>=1.15.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+phishguard-ml = "phishguard_ml_lifecycle.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

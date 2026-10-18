@@ -1,0 +1,192 @@
+# ---------------------------------------------------------------------------
+# PhishGuard — Self-Contained Local Docker Compose Stack
+#
+# Runs all service dependencies locally for end-to-end development & testing:
+#   gateway  : FastAPI escalation gateway (apps/backend/Dockerfile)
+#   postgres : PostgreSQL 16 database for audits, releases, and reputation
+#   redis    : Redis 7 for cache and rate limiting
+#   rustfs   : RustFS distributed S3-compatible artifact storage
+#
+# First run: scripts/bootstrap.sh (checks tools, creates .env, installs deps and exports the extension
+# signing key to .env as EXTENSION_SIGNING_KEY_B64, which the gateway build consumes as a BuildKit secret).
+#
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d --build
+#   docker compose -f docker-compose.local.yml logs -f gateway
+#   docker compose -f docker-compose.local.yml down
+# ---------------------------------------------------------------------------
+name: ${COMPOSE_PROJECT_NAME:-phishguard-local}
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      args:
+        BACKEND_URL: "${BACKEND_URL:-${GATEWAY_DOMAIN:-}}"
+        GATEWAY_DOMAIN: "${GATEWAY_DOMAIN:-}"
+        STUDENT_MODEL_URL: "${STUDENT_MODEL_URL:-}"
+      secrets:
+        - EXTENSION_SIGNING_KEY_B64
+    image: ${GATEWAY_IMAGE:-phishguard/gateway:local}
+    restart: unless-stopped
+    mem_limit: 2g
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ENV_NAME: "${ENV_NAME:-dev-1}"
+      PORT: "${GATEWAY_PORT:-8010}"
+      ENVIRONMENT: "${ENVIRONMENT:-development}"
+      AUTH_DEV_MODE: "${AUTH_DEV_MODE:-true}"
+      DATABASE_URL: "${DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-phishguard}:${POSTGRES_PASSWORD:-dev_postgres_password_123!}@postgres:5432/${POSTGRES_DB:-phishguard_dev_1}}"
+      REDIS_URL: "${REDIS_URL:-redis://:${REDIS_PASSWORD:-dev_redis_password_123!}@redis:6379/0}"
+      STATIC_DIR: "${STATIC_DIR:-/app/apps/backend/static}"
+      RUSTFS_ENDPOINT_URL: "${RUSTFS_ENDPOINT_URL:-http://rustfs:9000}"
+      RUSTFS_ACCESS_KEY: "${RUSTFS_ACCESS_KEY:-rustfsadmin}"
+      RUSTFS_SECRET_KEY: "${RUSTFS_SECRET_KEY:-rustfsadmin}"
+      RUSTFS_BUCKET: "${RUSTFS_BUCKET:-phishguard-artifacts-dev-1}"
+      RUSTFS_REGION: "${RUSTFS_REGION:-us-east-1}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+      GEMINI_TEACHER_ENABLED: "${GEMINI_TEACHER_ENABLED:-true}"
+      GEMINI_TEACHER_MODEL: "${GEMINI_TEACHER_MODEL:-gemini-3.5-flash-lite}"
+      GEMINI_TEACHER_TIMEOUT_S: "${GEMINI_TEACHER_TIMEOUT_S:-8}"
+      GEMINI_TEACHER_MAX_CALLS_PER_HOUR: "${GEMINI_TEACHER_MAX_CALLS_PER_HOUR:-200}"
+      GOOGLE_GENAI_USE_VERTEXAI: "${GOOGLE_GENAI_USE_VERTEXAI:-}"
+      GOOGLE_CLOUD_PROJECT: "${GOOGLE_CLOUD_PROJECT:-}"
+      GOOGLE_CLOUD_LOCATION: "${GOOGLE_CLOUD_LOCATION:-}"
+    ports:
+      - "${GATEWAY_PORT:-8010}:${GATEWAY_PORT:-8010}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    networks:
+      - phishguard-local
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('PORT', '8010') + '/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-phishguard}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-dev_postgres_password_123!}"
+      POSTGRES_DB: "${POSTGRES_DB:-phishguard_dev_1}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    expose:
+      - "5432"
+    networks:
+      - phishguard-local
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "pg_isready -U ${POSTGRES_USER:-phishguard} -d ${POSTGRES_DB:-phishguard_dev_1}"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - 'exec redis-server --appendonly yes --save 60 1 --requirepass "$$REDIS_PASSWORD"'
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-dev_redis_password_123!}"
+    volumes:
+      - redisdata:/data
+    expose:
+      - "6379"
+    networks:
+      - phishguard-local
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep -q PONG'
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: "${RUSTFS_ACCESS_KEY:-rustfsadmin}"
+      RUSTFS_SECRET_KEY: "${RUSTFS_SECRET_KEY:-rustfsadmin}"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_SERVER_DOMAINS: "rustfs,localhost"
+    volumes:
+      - rustfs_data:/data
+      - rustfs_logs:/logs
+    ports:
+      - "${RUSTFS_PORT:-9000}:9000"
+      - "${RUSTFS_CONSOLE_PORT:-9001}:9001"
+    networks:
+      - phishguard-local
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://127.0.0.1:9000/minio/health/live
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  dataset-agent:
+    build:
+      context: .
+      dockerfile: apps/dataset-agent/Dockerfile
+    image: ${DATASET_AGENT_IMAGE:-phishguard/dataset-agent:local}
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
+      DATASET_AGENT_OUTPUT_DIR: "/app/data/daily_datasets"
+      DATASET_AGENT_LIFECYCLE_DIR: "/app/data/phishguard_daily_aggregated"
+      DATASET_AGENT_SEARCH_PROVIDER: "${DATASET_AGENT_SEARCH_PROVIDER:-auto}"
+      DATASET_AGENT_INTERVAL_SECONDS: "${DATASET_AGENT_INTERVAL_SECONDS:-86400}"
+      DATASET_AGENT_SAMPLE_TARGET: "${DATASET_AGENT_SAMPLE_TARGET:-100}"
+      DATASET_AGENT_FEED_SOURCES: "${DATASET_AGENT_FEED_SOURCES:-openphish,tranco}"
+      DATASET_AGENT_TRANCO_TOP_N: "${DATASET_AGENT_TRANCO_TOP_N:-10000}"
+      DATASET_AGENT_FETCH_FEED_PAGES: "${DATASET_AGENT_FETCH_FEED_PAGES:-false}"
+      DATASET_AGENT_FETCH_CONCURRENCY: "${DATASET_AGENT_FETCH_CONCURRENCY:-8}"
+      DATASET_AGENT_DEEP_RESEARCH_ENABLED: "${DATASET_AGENT_DEEP_RESEARCH_ENABLED:-false}"
+      DATASET_AGENT_DEEP_RESEARCH_TASKS: "${DATASET_AGENT_DEEP_RESEARCH_TASKS:-1}"
+      DATASET_AGENT_DEEP_RESEARCH_MAX_URLS: "${DATASET_AGENT_DEEP_RESEARCH_MAX_URLS:-50}"
+      DATASET_AGENT_EXTRACTION_MODEL: "${DATASET_AGENT_EXTRACTION_MODEL:-gemini-3.6-flash}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - phishguard-local
+
+volumes:
+  pgdata:
+  redisdata:
+  rustfs_data:
+  rustfs_logs:
+
+secrets:
+  # base64 of the CRX signing PEM (BuildKit secret; never stored in the image).
+  EXTENSION_SIGNING_KEY_B64:
+    environment: EXTENSION_SIGNING_KEY_B64
+
+networks:
+  phishguard-local:
+    driver: bridge

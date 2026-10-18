@@ -1,0 +1,254 @@
+# ---------------------------------------------------------------------------
+# PhishGuard — Cloud Build pipeline: FastAPI gateway -> Cloud Run
+#
+# ONE pipeline serves every environment. A Cloud Build trigger per git branch
+# supplies `_ENV` (and optionally the Cloud SQL instance / VPC connector /
+# service account). See deploy/gcp/README.md for trigger setup.
+#
+#   dev-1 branch -> _ENV=dev-1   (Cloud Run: phishguard-gateway-dev-1)
+#   dev-2  branch -> _ENV=dev-2    (Cloud Run: phishguard-gateway-dev-2)
+#   main    branch -> _ENV=prod      (Cloud Run: phishguard-gateway-prod)
+#
+# Local dry run:
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_ENV=dev-1,_REGION=asia-south1
+# ---------------------------------------------------------------------------
+
+substitutions:
+  _ENV: dev-1 # dev-1 | dev-2 | prod
+  _REGION: asia-south1
+  _AR_REPO: phishguard
+  _MIN_INSTANCES: "0" # set >0 for prod to avoid torch cold starts
+  _MAX_INSTANCES: "4"
+  _MEMORY: "2Gi" # torch + MobileNetV3 vision model need headroom
+  # Optional per-env wiring (leave empty to skip the flag).
+  _CLOUDSQL_INSTANCE: "" # e.g. myproj:asia-south1:phishguard-dev-1
+  _VPC_CONNECTOR: "" # e.g. phishguard-dev-1-connector (Memorystore Redis)
+  _RUNTIME_SA: "" # e.g. phishguard-run-dev-1@myproj.iam.gserviceaccount.com
+  _DB_SECRET: "" # Secret Manager secret name for DATABASE_URL
+  _REDIS_SECRET: "" # Secret Manager secret name for REDIS_URL
+  _RUSTFS_ENDPOINT_URL: "" # Optional endpoint URL for S3/RustFS storage (e.g. https://storage.googleapis.com)
+  _RUSTFS_BUCKET: "" # Target artifact bucket
+  _RUSTFS_SECRET: "" # Secret Manager secret name for RUSTFS secret key
+  _RUSTFS_ACCESS_KEY_SECRET: "" # Secret Manager secret name for RUSTFS access key
+  _MODEL_URL: "" # Optional URL to fetch the gitignored student_model.onnx during build (RustFS/GCS)
+  _GATEWAY_DOMAIN: "" # optional; the build uses _BACKEND_URL (or its derived default) first
+  _BACKEND_URL: "" # empty -> https://phishguard-gateway-${_ENV}-${PROJECT_NUMBER}.${_REGION}.run.app
+  _EXTENSION_SIGNING_KEY_SECRET: phishguard-extension-signing-key-b64
+  # Dataset agent (Cloud Run Job, dormant — deployed but never scheduled).
+  _GEMINI_SECRET: "" # Secret Manager secret name for GEMINI_API_KEY (dataset-agent job and gateway Gemini teacher)
+  _GEMINI_TEACHER_MODEL: gemini-3.5-flash-lite
+  _GEMINI_TEACHER_MAX_CALLS: "200" # Global hourly cap on Gemini teacher evaluations (/v1/escalate/gemini + playground)
+  _DATASET_BUCKET: "" # Optional GCS bucket mounted at /app/data
+  _DATASET_AGENT_MEMORY: "2Gi"
+  _DATASET_AGENT_TASK_TIMEOUT: "3600s"
+  _DATASET_AGENT_DEEP_RESEARCH: "false"
+
+steps:
+  - id: build-gateway
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    env:
+      - DOCKER_BUILDKIT=1
+    secretEnv:
+      - EXTENSION_SIGNING_KEY_B64
+    args:
+      - -c
+      - |
+        docker pull ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-latest || true
+        EFFECTIVE_BACKEND_URL="${_BACKEND_URL}"
+        if [ -z "$$EFFECTIVE_BACKEND_URL" ]; then
+          EFFECTIVE_BACKEND_URL="https://phishguard-gateway-${_ENV}-$PROJECT_NUMBER.${_REGION}.run.app"
+        fi
+        echo "Building with BACKEND_URL=$$EFFECTIVE_BACKEND_URL"
+        docker build \
+          --cache-from=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --file=apps/backend/Dockerfile \
+          --secret id=EXTENSION_SIGNING_KEY_B64,env=EXTENSION_SIGNING_KEY_B64 \
+          --build-arg BACKEND_URL="$$EFFECTIVE_BACKEND_URL" \
+          --build-arg GATEWAY_DOMAIN=${_GATEWAY_DOMAIN} \
+          --build-arg STUDENT_MODEL_URL=${_MODEL_URL} \
+          --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-${SHORT_SHA} \
+          --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-latest \
+          .
+
+  - id: push-gateway
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway
+    waitFor:
+      - build-gateway
+
+  - id: deploy-gateway
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        SERVICE="phishguard-gateway-${_ENV}"
+        IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-${SHORT_SHA}"
+
+        ENV_VARS="ENV_NAME=${_ENV},ENVIRONMENT=${_ENV},AUTH_DEV_MODE=false,STATIC_DIR=/app/apps/backend/static,GEMINI_TEACHER_MODEL=${_GEMINI_TEACHER_MODEL},GEMINI_TEACHER_MAX_CALLS_PER_HOUR=${_GEMINI_TEACHER_MAX_CALLS}"
+        if [ -n "${_RUSTFS_ENDPOINT_URL}" ]; then
+          ENV_VARS="$${ENV_VARS},RUSTFS_ENDPOINT_URL=${_RUSTFS_ENDPOINT_URL}"
+        fi
+        if [ -n "${_RUSTFS_BUCKET}" ]; then
+          ENV_VARS="$${ENV_VARS},RUSTFS_BUCKET=${_RUSTFS_BUCKET}"
+        fi
+
+        ARGS=(
+          --image "$$IMAGE"
+          --region "${_REGION}"
+          --platform managed
+          --allow-unauthenticated
+          --port 8080   # Cloud Run injects PORT; the app honors the PORT env var
+          --min-instances "${_MIN_INSTANCES}"
+          --max-instances "${_MAX_INSTANCES}"
+          --memory "${_MEMORY}"
+          --set-env-vars "$$ENV_VARS"
+        )
+
+        if [ -n "${_CLOUDSQL_INSTANCE}" ]; then
+          ARGS+=(--add-cloudsql-instances "${_CLOUDSQL_INSTANCE}")
+        fi
+        if [ -n "${_VPC_CONNECTOR}" ]; then
+          ARGS+=(--vpc-connector "${_VPC_CONNECTOR}" --vpc-egress private-ranges-only)
+        fi
+        if [ -n "${_RUNTIME_SA}" ]; then
+          ARGS+=(--service-account "${_RUNTIME_SA}")
+        fi
+
+        SECRETS=""
+        if [ -n "${_DB_SECRET}" ]; then
+          SECRETS="DATABASE_URL=${_DB_SECRET}:latest"
+        fi
+        if [ -n "${_REDIS_SECRET}" ]; then
+          if [ -n "$$SECRETS" ]; then
+            SECRETS="$$SECRETS,REDIS_URL=${_REDIS_SECRET}:latest"
+          else
+            SECRETS="REDIS_URL=${_REDIS_SECRET}:latest"
+          fi
+        fi
+        if [ -n "${_RUSTFS_SECRET}" ]; then
+          if [ -n "$$SECRETS" ]; then
+            SECRETS="$$SECRETS,RUSTFS_SECRET_KEY=${_RUSTFS_SECRET}:latest"
+          else
+            SECRETS="RUSTFS_SECRET_KEY=${_RUSTFS_SECRET}:latest"
+          fi
+        fi
+        if [ -n "${_RUSTFS_ACCESS_KEY_SECRET}" ]; then
+          if [ -n "$$SECRETS" ]; then
+            SECRETS="$$SECRETS,RUSTFS_ACCESS_KEY=${_RUSTFS_ACCESS_KEY_SECRET}:latest"
+          else
+            SECRETS="RUSTFS_ACCESS_KEY=${_RUSTFS_ACCESS_KEY_SECRET}:latest"
+          fi
+        fi
+        if [ -n "${_GEMINI_SECRET}" ]; then
+          if [ -n "$$SECRETS" ]; then
+            SECRETS="$$SECRETS,GEMINI_API_KEY=${_GEMINI_SECRET}:latest"
+          else
+            SECRETS="GEMINI_API_KEY=${_GEMINI_SECRET}:latest"
+          fi
+        fi
+        if [ -n "$$SECRETS" ]; then
+          ARGS+=(--set-secrets "$$SECRETS")
+        fi
+
+        echo "Deploying $$SERVICE"
+        echo "  image: $$IMAGE"
+        gcloud run deploy "$$SERVICE" "$${ARGS[@]}"
+    waitFor:
+      - push-gateway
+
+  - id: build-dataset-agent
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        docker pull ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-latest || true
+        docker build \
+          --cache-from=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --file=apps/dataset-agent/Dockerfile \
+          --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-${SHORT_SHA} \
+          --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-latest \
+          .
+    waitFor:
+      - '-'
+
+  - id: push-dataset-agent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent
+    waitFor:
+      - build-dataset-agent
+
+  - id: deploy-dataset-agent-job
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        JOB="phishguard-dataset-agent-${_ENV}"
+        IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-${SHORT_SHA}"
+
+        ENV_VARS="ENV_NAME=${_ENV},ENVIRONMENT=${_ENV},DATASET_AGENT_OUTPUT_DIR=/app/data/daily_datasets,DATASET_AGENT_LIFECYCLE_DIR=/app/data/phishguard_daily_aggregated,DATASET_AGENT_DEEP_RESEARCH_ENABLED=${_DATASET_AGENT_DEEP_RESEARCH}"
+
+        ARGS=(
+          --image "$$IMAGE"
+          --region "${_REGION}"
+          --command phishguard-dataset-agent
+          --args run-once
+          --tasks 1
+          --max-retries 0
+          --task-timeout "${_DATASET_AGENT_TASK_TIMEOUT}"
+          --memory "${_DATASET_AGENT_MEMORY}"
+          --set-env-vars "$$ENV_VARS"
+        )
+
+        if [ -n "${_RUNTIME_SA}" ]; then
+          ARGS+=(--service-account "${_RUNTIME_SA}")
+        fi
+        if [ -n "${_GEMINI_SECRET}" ]; then
+          ARGS+=(--set-secrets "GEMINI_API_KEY=${_GEMINI_SECRET}:latest")
+        fi
+        if [ -n "${_DATASET_BUCKET}" ]; then
+          ARGS+=(--add-volume "name=data,type=cloud-storage,bucket=${_DATASET_BUCKET}")
+          ARGS+=(--add-volume-mount "volume=data,mount-path=/app/data")
+        fi
+
+        # Dormant by design: deploys the job definition only — no --execute-now
+        # and no Cloud Scheduler trigger. Run manually with:
+        #   gcloud run jobs execute "$$JOB" --region "${_REGION}"
+        echo "Deploying $$JOB"
+        echo "  image: $$IMAGE"
+        gcloud run jobs deploy "$$JOB" "$${ARGS[@]}"
+    waitFor:
+      - push-dataset-agent
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/${_EXTENSION_SIGNING_KEY_SECRET}/versions/latest
+      env: EXTENSION_SIGNING_KEY_B64
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-${SHORT_SHA}
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/gateway:${_ENV}-latest
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-${SHORT_SHA}
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/dataset-agent:${_ENV}-latest
+
+options:
+  # Default e2-standard-2 keeps builds within Cloud Build's free 120 min/day;
+  # the --cache-from layer caching below avoids reinstalling torch each build.
+  machineType: E2_STANDARD_2
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 3600s # two images now install the CPU torch wheel

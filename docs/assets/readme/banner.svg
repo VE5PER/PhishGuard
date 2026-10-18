@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">PhishGuard: Phishing stops here. For humans and AI agents.</title>
+  <desc id="desc">On-device phishing and fraud defense. Gemini ADK second opinion on Cloud Run.</desc>
+  <defs>
+    <radialGradient id="glow" cx="0.82" cy="0.78" r="0.6">
+      <stop offset="0" stop-color="#C6F432" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#C6F432" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.28" cy="0.5" r="0.75">
+      <stop offset="0" stop-color="#08090A" stop-opacity="0.9"/>
+      <stop offset="0.6" stop-color="#08090A" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#08090A" stop-opacity="0.1"/>
+    </radialGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C6F432" stop-opacity="0"/>
+      <stop offset="1" stop-color="#C6F432" stop-opacity="0.12"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C6F432" stop-opacity="0"/>
+      <stop offset="1" stop-color="#C6F432" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="#08090A"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <!-- Radar -->
+  <g transform="translate(1040 400)" fill="none" stroke="#FFFFFF">
+    <circle r="70" stroke-opacity="0.10"/>
+    <circle r="140" stroke-opacity="0.08"/>
+    <circle r="210" stroke-opacity="0.06" stroke-dasharray="3 7"/>
+    <circle r="280" stroke-opacity="0.05"/>
+    <circle r="350" stroke-opacity="0.04"/>
+    <line x1="-350" y1="0" x2="350" y2="0" stroke-opacity="0.04"/>
+    <line x1="0" y1="-350" x2="0" y2="350" stroke-opacity="0.04"/>
+    <path d="M0 0 L280 0 A280 280 0 0 0 198 -198 Z" fill="url(#sweep)" stroke="none"/>
+    <circle r="26" fill="#08090A" stroke="#C6F432" stroke-opacity="0.8" stroke-width="1.5"/>
+    <circle r="34" stroke="#C6F432" stroke-opacity="0.25" stroke-dasharray="2 4"/>
+    <g stroke="#C6F432" stroke-width="1.6" stroke-linecap="round">
+      <line x1="-8" y1="-8" x2="8" y2="8"/>
+      <line x1="8" y1="-8" x2="-8" y2="8"/>
+    </g>
+    <g fill="#C6F432" stroke="none">
+      <circle r="3.2"/>
+      <circle cx="-8" cy="-8" r="2.2"/><circle cx="8" cy="8" r="2.2"/>
+      <circle cx="8" cy="-8" r="2.2"/><circle cx="-8" cy="8" r="2.2"/>
+    </g>
+  </g>
+
+  <!-- Telemetry trails: natural (curved, lime) vs scripted (straight, red) -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M40 560 C 260 470, 420 600, 640 520 S 980 420, 1180 470" stroke="url(#trail)" stroke-width="1.6"/>
+    <path d="M120 640 C 380 520, 520 560, 760 470 S 1040 360, 1240 300" stroke="#C6F432" stroke-opacity="0.18" stroke-width="1.2"/>
+    <path d="M0 470 C 200 430, 340 500, 560 450 S 900 380, 1120 250" stroke="#C6F432" stroke-opacity="0.12" stroke-width="1"/>
+    <path d="M1240 40 L 860 330" stroke="#C6F432" stroke-opacity="0.16" stroke-width="1"/>
+    <path d="M260 120 L 900 210" stroke="#FF5A46" stroke-opacity="0.55" stroke-width="1.4"/>
+  </g>
+  <g fill="#C6F432">
+    <circle cx="1180" cy="470" r="3"/>
+    <circle cx="1240" cy="300" r="2.5" fill-opacity="0.7"/>
+    <circle cx="1120" cy="250" r="2.5" fill-opacity="0.6"/>
+  </g>
+  <g transform="translate(900 210)">
+    <circle r="3.5" fill="#FF5A46"/>
+    <path d="M-14 -6 V-14 H-6 M6 -14 H14 V-6 M14 6 V14 H6 M-6 14 H-14 V6" fill="none" stroke="#FF5A46" stroke-opacity="0.8" stroke-width="1.4"/>
+    <text x="22" y="-14" font-family="'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace" font-size="13" letter-spacing="1.5" fill="#FF5A46" fill-opacity="0.85">BLOCKED · 0.93</text>
+  </g>
+
+  <rect width="1280" height="640" fill="url(#vignette)"/>
+
+  <!-- Logo -->
+  <g transform="translate(80 64)">
+    <rect width="44" height="44" rx="12" fill="#C6F432" fill-opacity="0.08" stroke="#C6F432" stroke-opacity="0.6" stroke-width="1.5"/>
+    <path d="M22 10.5 L32 14.5 V22 C32 28.5 27.8 32.6 22 34.5 C16.2 32.6 12 28.5 12 22 V14.5 Z" fill="none" stroke="#C6F432" stroke-width="2" stroke-linejoin="round"/>
+    <text x="60" y="30" font-family="'Space Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">PhishGuard</text>
+  </g>
+
+  <!-- Copy -->
+  <text x="80" y="214" font-family="'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace" font-size="17" letter-spacing="3.4" fill="#C6F432">ON-DEVICE PHISHING &amp; FRAUD DEFENSE</text>
+  <text x="76" y="326" font-family="'Space Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="104" font-weight="700" letter-spacing="-4" fill="#FFFFFF">Phishing stops here<tspan fill="#C6F432">.</tspan></text>
+  <text x="80" y="398" font-family="'Space Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="46" font-weight="500" letter-spacing="-1" fill="#FFFFFF" fill-opacity="0.72">For humans and <tspan fill="#C6F432" fill-opacity="1">AI agents</tspan>.</text>
+
+  <!-- Chips -->
+  <g font-family="'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace" font-size="15" fill="#FFFFFF" fill-opacity="0.75">
+    <rect x="80" y="486" width="190" height="38" rx="19" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
+    <text x="175" y="510" text-anchor="middle">Runs on-device</text>
+    <rect x="282" y="486" width="210" height="38" rx="19" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
+    <text x="387" y="510" text-anchor="middle">0 keystrokes kept</text>
+    <rect x="504" y="486" width="200" height="38" rx="19" fill="#C6F432" fill-opacity="0.08" stroke="#C6F432" stroke-opacity="0.5"/>
+    <text x="604" y="510" text-anchor="middle" fill="#C6F432" fill-opacity="1">Gemini · ADK</text>
+    <rect x="716" y="486" width="160" height="38" rx="19" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
+    <text x="796" y="510" text-anchor="middle">Cloud Run</text>
+  </g>
+</svg>

@@ -1,0 +1,313 @@
+{
+  "version": "0.5.18",
+  "major": 0,
+  "minor": 5,
+  "patch": 18,
+  "buildNumber": 35,
+  "lastBuild": "2026-10-18T14:30:56.148Z",
+  "gitCommit": "6635e20",
+  "branch": "main",
+  "isDirty": true,
+  "history": [
+    {
+      "version": "0.4.1",
+      "buildNumber": 1,
+      "timestamp": "2026-10-11T14:29:40.851Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.0",
+      "buildNumber": 0,
+      "timestamp": "2026-10-11T14:29:40.900Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.1",
+      "buildNumber": 1,
+      "timestamp": "2026-10-11T14:34:50.211Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.2",
+      "buildNumber": 2,
+      "timestamp": "2026-10-11T14:35:04.466Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.3",
+      "buildNumber": 3,
+      "timestamp": "2026-10-11T15:00:43.023Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.4",
+      "buildNumber": 4,
+      "timestamp": "2026-10-11T15:10:38.137Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.1",
+      "buildNumber": 4,
+      "timestamp": "2026-10-11T15:10:44.836Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.2",
+      "buildNumber": 5,
+      "timestamp": "2026-10-11T15:24:11.096Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.1",
+      "buildNumber": 5,
+      "timestamp": "2026-10-11T15:24:17.900Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.1",
+      "buildNumber": 5,
+      "timestamp": "2026-10-11T16:21:31.961Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.2",
+      "buildNumber": 5,
+      "timestamp": "2026-10-11T16:23:37.700Z",
+      "commit": "6f0cf96"
+    },
+    {
+      "version": "0.4.3",
+      "buildNumber": 6,
+      "timestamp": "2026-10-11T19:58:15.097Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.4",
+      "buildNumber": 7,
+      "timestamp": "2026-10-11T20:23:58.130Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.5",
+      "buildNumber": 8,
+      "timestamp": "2026-10-11T20:32:21.486Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.6",
+      "buildNumber": 9,
+      "timestamp": "2026-10-11T20:41:34.883Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.7",
+      "buildNumber": 10,
+      "timestamp": "2026-10-11T20:45:12.618Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.8",
+      "buildNumber": 11,
+      "timestamp": "2026-10-11T20:49:17.767Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.9",
+      "buildNumber": 12,
+      "timestamp": "2026-10-11T20:51:56.641Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.10",
+      "buildNumber": 13,
+      "timestamp": "2026-10-11T20:55:10.813Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.11",
+      "buildNumber": 14,
+      "timestamp": "2026-10-11T21:05:17.903Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.12",
+      "buildNumber": 15,
+      "timestamp": "2026-10-11T21:17:18.505Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.4.13",
+      "buildNumber": 16,
+      "timestamp": "2026-10-11T21:43:34.206Z",
+      "commit": "ad61b99"
+    },
+    {
+      "version": "0.5.0",
+      "buildNumber": 16,
+      "timestamp": "2026-10-12T12:18:04.556Z",
+      "commit": "91b432c"
+    },
+    {
+      "version": "0.5.0",
+      "buildNumber": 16,
+      "timestamp": "2026-10-12T12:19:32.780Z",
+      "commit": "91b432c"
+    },
+    {
+      "version": "0.5.1",
+      "buildNumber": 17,
+      "timestamp": "2026-10-12T18:34:38.477Z",
+      "commit": "91b432c"
+    },
+    {
+      "version": "0.5.2",
+      "buildNumber": 18,
+      "timestamp": "2026-10-12T18:34:50.408Z",
+      "commit": "91b432c"
+    },
+    {
+      "version": "0.5.1",
+      "buildNumber": 18,
+      "timestamp": "2026-10-12T18:34:57.081Z",
+      "commit": "91b432c"
+    },
+    {
+      "version": "0.5.2",
+      "buildNumber": 19,
+      "timestamp": "2026-10-13T07:50:09.669Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.3",
+      "buildNumber": 20,
+      "timestamp": "2026-10-13T07:54:01.908Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.99",
+      "buildNumber": 20,
+      "timestamp": "2026-10-13T09:13:32.810Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.0",
+      "buildNumber": 0,
+      "timestamp": "2026-10-13T09:13:32.855Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.0",
+      "buildNumber": 0,
+      "timestamp": "2026-10-13T09:13:32.909Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.1",
+      "buildNumber": 1,
+      "timestamp": "2026-10-13T09:13:32.953Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.0",
+      "buildNumber": 0,
+      "timestamp": "2026-10-13T09:13:32.994Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.3",
+      "buildNumber": 20,
+      "timestamp": "2026-10-13T09:16:31.152Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.4",
+      "buildNumber": 21,
+      "timestamp": "2026-10-13T09:19:19.466Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.5",
+      "buildNumber": 22,
+      "timestamp": "2026-10-13T10:32:23.190Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.6",
+      "buildNumber": 23,
+      "timestamp": "2026-10-13T12:38:10.563Z",
+      "commit": "264973f"
+    },
+    {
+      "version": "0.5.7",
+      "buildNumber": 24,
+      "timestamp": "2026-10-13T16:07:03.913Z",
+      "commit": "35863bf"
+    },
+    {
+      "version": "0.5.8",
+      "buildNumber": 25,
+      "timestamp": "2026-10-13T17:09:41.168Z",
+      "commit": "e68ec3c"
+    },
+    {
+      "version": "0.5.9",
+      "buildNumber": 26,
+      "timestamp": "2026-10-13T17:21:46.614Z",
+      "commit": "e68ec3c"
+    },
+    {
+      "version": "0.5.10",
+      "buildNumber": 27,
+      "timestamp": "2026-10-13T17:25:05.922Z",
+      "commit": "e68ec3c"
+    },
+    {
+      "version": "0.5.11",
+      "buildNumber": 28,
+      "timestamp": "2026-10-13T19:43:25.960Z",
+      "commit": "7944e5c"
+    },
+    {
+      "version": "0.5.12",
+      "buildNumber": 29,
+      "timestamp": "2026-10-13T19:48:33.760Z",
+      "commit": "7944e5c"
+    },
+    {
+      "version": "0.5.13",
+      "buildNumber": 30,
+      "timestamp": "2026-10-15T19:04:02.833Z",
+      "commit": "2f4b4d2"
+    },
+    {
+      "version": "0.5.14",
+      "buildNumber": 31,
+      "timestamp": "2026-10-15T19:21:29.011Z",
+      "commit": "2f4b4d2"
+    },
+    {
+      "version": "0.5.15",
+      "buildNumber": 32,
+      "timestamp": "2026-10-15T20:58:53.474Z",
+      "commit": "2f4b4d2"
+    },
+    {
+      "version": "0.5.16",
+      "buildNumber": 33,
+      "timestamp": "2026-10-15T21:48:44.084Z",
+      "commit": "f12b34e"
+    },
+    {
+      "version": "0.5.17",
+      "buildNumber": 34,
+      "timestamp": "2026-10-18T13:55:39.076Z",
+      "commit": "6635e20"
+    },
+    {
+      "version": "0.5.18",
+      "buildNumber": 35,
+      "timestamp": "2026-10-18T14:30:56.148Z",
+      "commit": "6635e20"
+    }
+  ]
+}

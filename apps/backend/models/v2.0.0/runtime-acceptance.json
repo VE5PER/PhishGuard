@@ -1,0 +1,128 @@
+{
+  "format": "student-runtime-acceptance-v2",
+  "modelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+  "passed": true,
+  "failures": [],
+  "maxCpuWebError": 2.9802322387695312e-8,
+  "maxProtocolDelta": 0,
+  "cases": [
+    {
+      "name": "sample1_http",
+      "pair": "sample1",
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0.00012990832328796387,
+      "score": 0.05,
+      "cpuWebError": 2.9802322387695312e-8
+    },
+    {
+      "name": "sample1_https",
+      "pair": "sample1",
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0.00012990832328796387,
+      "score": 0.05,
+      "cpuWebError": 2.9802322387695312e-8
+    },
+    {
+      "name": "sample2_http",
+      "pair": "sample2",
+      "expectedAction": "AMBIGUOUS",
+      "actualAction": "AMBIGUOUS",
+      "modelScore": 0.5078421831130981,
+      "score": 0.507842,
+      "cpuWebError": 0
+    },
+    {
+      "name": "sample2_https",
+      "pair": "sample2",
+      "expectedAction": "AMBIGUOUS",
+      "actualAction": "AMBIGUOUS",
+      "modelScore": 0.5078421831130981,
+      "score": 0.507842,
+      "cpuWebError": 0
+    },
+    {
+      "name": "sample2_repeated_http",
+      "pair": "sample2_repeated",
+      "expectedAction": "AMBIGUOUS",
+      "actualAction": "AMBIGUOUS",
+      "modelScore": 0.00007781386375427246,
+      "score": 0.4,
+      "cpuWebError": 2.9802322387695312e-8
+    },
+    {
+      "name": "sample2_repeated_https",
+      "pair": "sample2_repeated",
+      "expectedAction": "AMBIGUOUS",
+      "actualAction": "AMBIGUOUS",
+      "modelScore": 0.00007781386375427246,
+      "score": 0.4,
+      "cpuWebError": 2.9802322387695312e-8
+    },
+    {
+      "name": "sample3_http",
+      "pair": "sample3",
+      "expectedAction": "BLOCK",
+      "actualAction": "BLOCK",
+      "modelScore": 0.6754464507102966,
+      "score": 0.9,
+      "cpuWebError": 0
+    },
+    {
+      "name": "sample3_https",
+      "pair": "sample3",
+      "expectedAction": "BLOCK",
+      "actualAction": "BLOCK",
+      "modelScore": 0.6754464507102966,
+      "score": 0.9,
+      "cpuWebError": 0
+    },
+    {
+      "name": "landing_white_http",
+      "pair": "landing_white",
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0,
+      "score": 0.05,
+      "cpuWebError": 0
+    },
+    {
+      "name": "landing_white_https",
+      "pair": "landing_white",
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0,
+      "score": 0.05,
+      "cpuWebError": 0
+    },
+    {
+      "name": "brand_article_http",
+      "pair": "brand_article",
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0,
+      "score": 0.05,
+      "cpuWebError": 0
+    },
+    {
+      "name": "brand_article_https",
+      "pair": "brand_article",
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0,
+      "score": 0.05,
+      "cpuWebError": 0
+    },
+    {
+      "name": "synthetic_official_yahoo_login",
+      "pair": null,
+      "expectedAction": "SAFE",
+      "actualAction": "SAFE",
+      "modelScore": 0,
+      "score": 0.05,
+      "cpuWebError": 0
+    }
+  ],
+  "scope": "Constructed local fixtures through onnxruntime-web; no real-site observation or browser RAM measurement"
+}

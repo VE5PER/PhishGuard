@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------------------
+# PhishGuard — Cloud Build pipeline: browser extension -> Cloud Run
+#
+# The extension is a static MV3 bundle, not an API. This pipeline builds
+# apps/extension/Dockerfile (Node build -> nginx) and serves it from Cloud Run
+# so users can download the load-unpacked .zip from a stable HTTPS URL.
+#
+# Use a SEPARATE Cloud Build trigger from the gateway pipeline, ideally with a
+# path filter on `apps/extension/**` and `packages/types/**`.
+#
+#   gcloud builds submit --config deploy/gcp/cloudbuild.extension.yaml \
+#     --substitutions=_ENV=prod,_BACKEND_URL=https://phishguard-gateway-prod-<PROJECT_NUMBER>.<REGION>.run.app
+#
+# _BACKEND_URL is optional: when empty it defaults to the Cloud Run URL of
+# phishguard-gateway-${_ENV} in this project/region.
+#
+# The CRX signing key (base64 of the PEM) comes from Secret Manager
+# (_EXTENSION_SIGNING_KEY_SECRET) and is passed to Docker as a BuildKit secret.
+# The Cloud Build service account needs roles/secretmanager.secretAccessor on it.
+# ---------------------------------------------------------------------------
+
+substitutions:
+  _ENV: dev-1
+  _REGION: asia-south1
+  _AR_REPO: phishguard
+  _MIN_INSTANCES: "0"
+  _MAX_INSTANCES: "2"
+  _GATEWAY_DOMAIN: "" # optional; the build uses _BACKEND_URL (or its derived default) first
+  _BACKEND_URL: "" # empty -> https://phishguard-gateway-${_ENV}-${PROJECT_NUMBER}.${_REGION}.run.app
+  _EXTENSION_SIGNING_KEY_SECRET: phishguard-extension-signing-key-b64
+  _MODEL_URL: "" # Optional URL to fetch the gitignored student_model.onnx during build (RustFS/GCS)
+
+steps:
+  - id: build-extension
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    env:
+      - DOCKER_BUILDKIT=1
+    secretEnv:
+      - EXTENSION_SIGNING_KEY_B64
+    args:
+      - -c
+      - |
+        EFFECTIVE_BACKEND_URL="${_BACKEND_URL}"
+        if [ -z "$$EFFECTIVE_BACKEND_URL" ]; then
+          EFFECTIVE_BACKEND_URL="https://phishguard-gateway-${_ENV}-$PROJECT_NUMBER.${_REGION}.run.app"
+        fi
+        echo "Building with BACKEND_URL=$$EFFECTIVE_BACKEND_URL"
+        docker build \
+          --file=apps/extension/Dockerfile \
+          --secret id=EXTENSION_SIGNING_KEY_B64,env=EXTENSION_SIGNING_KEY_B64 \
+          --build-arg BACKEND_URL="$$EFFECTIVE_BACKEND_URL" \
+          --build-arg GATEWAY_DOMAIN=${_GATEWAY_DOMAIN} \
+          --build-arg STUDENT_MODEL_URL=${_MODEL_URL} \
+          --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/extension:${_ENV}-${SHORT_SHA} \
+          --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/extension:${_ENV}-latest \
+          .
+
+  - id: push-extension
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/extension
+    waitFor:
+      - build-extension
+
+  - id: deploy-extension
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        SERVICE="phishguard-extension-${_ENV}"
+        IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/extension:${_ENV}-${SHORT_SHA}"
+        echo "Deploying $$SERVICE"
+        gcloud run deploy "$$SERVICE" \
+          --image "$$IMAGE" \
+          --region "${_REGION}" \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 80 \
+          --min-instances "${_MIN_INSTANCES}" \
+          --max-instances "${_MAX_INSTANCES}"
+    waitFor:
+      - push-extension
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/${_EXTENSION_SIGNING_KEY_SECRET}/versions/latest
+      env: EXTENSION_SIGNING_KEY_B64
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/extension:${_ENV}-${SHORT_SHA}
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/extension:${_ENV}-latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1200s

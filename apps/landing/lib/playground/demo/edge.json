@@ -1,0 +1,54 @@
+{
+  "brand-impersonation": {
+    "modelScore": 0.2963634729385376,
+    "evidenceScore": 0.9,
+    "fusedScore": 0.9,
+    "route": "BLOCK",
+    "ruleIds": [
+      "intercepting_overlay",
+      "credential_and_submit_interception"
+    ],
+    "reasons": [
+      "A persistent transparent overlay intercepts an interactive control",
+      "Distinct transparent traps intercept credential and submission controls"
+    ],
+    "latencyMs": 24.59999990463257,
+    "modelVersion": "2.0.0",
+    "modelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+    "inputContract": "student-v2",
+    "modelStatus": "available",
+    "unavailableReason": null
+  },
+  "ambiguous-sso": {
+    "modelScore": 9.447336196899414e-06,
+    "evidenceScore": 0.4,
+    "fusedScore": 0.4,
+    "route": "AMBIGUOUS",
+    "ruleIds": [
+      "intercepting_overlay"
+    ],
+    "reasons": [
+      "A persistent transparent overlay intercepts an interactive control"
+    ],
+    "latencyMs": 2.799999713897705,
+    "modelVersion": "2.0.0",
+    "modelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+    "inputContract": "student-v2",
+    "modelStatus": "available",
+    "unavailableReason": null
+  },
+  "benign-google": {
+    "modelScore": 1.043081283569336e-06,
+    "evidenceScore": 0.05,
+    "fusedScore": 0.05,
+    "route": "SAFE",
+    "ruleIds": [],
+    "reasons": [],
+    "latencyMs": 2.5999999046325684,
+    "modelVersion": "2.0.0",
+    "modelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+    "inputContract": "student-v2",
+    "modelStatus": "available",
+    "unavailableReason": null
+  }
+}

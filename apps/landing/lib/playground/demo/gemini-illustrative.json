@@ -1,0 +1,108 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "teacherModelVersion": "gemini-adk/gemini-3.5-flash-lite",
+  "scenarios": {
+    "brand-impersonation": {
+      "latencyMs": 2380,
+      "toolCalls": [
+        {
+          "name": "verify_brand_official_domain",
+          "args": { "brand_name": "PayPal" },
+          "result": { "brand": "paypal", "known": true, "authorized_domains": ["paypal.com"], "page_host_authorized": false }
+        },
+        {
+          "name": "lookup_threat_memory_bank",
+          "args": { "domain": "login-verify-paypa1.xyz" },
+          "result": { "available": true, "prior_escalations": 0, "block_count": 0, "warn_count": 0, "recent_brands": [], "last_seen": null }
+        }
+      ],
+      "verdict": {
+        "isPhishing": true,
+        "targetBrand": "paypal",
+        "confidence": 0.97,
+        "actionOverride": "BLOCK",
+        "riskScore": 0.96,
+        "explanationReasons": [
+          "PayPal branding is rendered on login-verify-paypa1.xyz, which is not an official PayPal domain (paypal.com); the host swaps the letter l for the digit 1.",
+          "Transparent overlays sit directly over the password field and the Log In button, so clicks land on hidden elements instead of the visible controls.",
+          "An embedded 'Secure card check' widget from an unverified third-party origin asks for a card number inside the login flow.",
+          "The banner pressures the user with an account limitation and a 24-hour suspension deadline."
+        ],
+        "screenAnalysis": {
+          "screenRiskScore": 0.95,
+          "detectedBrand": "PayPal",
+          "credentialFormVisible": true,
+          "urgencyCues": ["We've limited your account", "Confirm your details within 24 hours to avoid suspension"],
+          "onScreenUrlMismatch": true,
+          "reasons": [
+            "The PayPal wordmark and login card imitate the official PayPal sign-in page.",
+            "The card widget names verify.payments-auth.co, a different host from the page itself."
+          ]
+        }
+      }
+    },
+    "ambiguous-sso": {
+      "latencyMs": 2140,
+      "toolCalls": [
+        {
+          "name": "verify_brand_official_domain",
+          "args": { "brand_name": "Northwind" },
+          "result": { "brand": "northwind", "known": false, "authorized_domains": [], "page_host_authorized": false }
+        },
+        {
+          "name": "lookup_threat_memory_bank",
+          "args": { "domain": "sso.northwind-gateway.co" },
+          "result": { "available": true, "prior_escalations": 0, "block_count": 0, "warn_count": 0, "recent_brands": [], "last_seen": null }
+        }
+      ],
+      "verdict": {
+        "isPhishing": false,
+        "targetBrand": null,
+        "confidence": 0.62,
+        "actionOverride": "WARN",
+        "riskScore": 0.55,
+        "explanationReasons": [
+          "Northwind is not in the brand registry, so sso.northwind-gateway.co cannot be confirmed as the organisation's official sign-in host.",
+          "A transparent overlay covers the 'Forgot password?' link and intercepts clicks meant for it.",
+          "There are no urgency cues, payment requests or off-domain credential frames, so the evidence supports a warning rather than a block."
+        ],
+        "screenAnalysis": {
+          "screenRiskScore": 0.48,
+          "detectedBrand": "Northwind",
+          "credentialFormVisible": true,
+          "urgencyCues": [],
+          "onScreenUrlMismatch": false,
+          "reasons": [
+            "Generic corporate single sign-on layout with username and password fields.",
+            "No visual inconsistencies in the logo, typography or layout."
+          ]
+        }
+      }
+    },
+    "benign-google": {
+      "latencyMs": 1520,
+      "toolCalls": [
+        {
+          "name": "verify_brand_official_domain",
+          "args": { "brand_name": "Google" },
+          "result": { "brand": "google", "known": true, "authorized_domains": ["google.com", "accounts.google.com", "gmail.com", "youtube.com"], "page_host_authorized": true }
+        }
+      ],
+      "verdict": {
+        "fromEvidenceBaseline": true,
+        "extraReasons": ["Brand claim contradicted by registry: host is authorized for google"],
+        "screenAnalysis": {
+          "screenRiskScore": 0.04,
+          "detectedBrand": "Google",
+          "credentialFormVisible": true,
+          "urgencyCues": [],
+          "onScreenUrlMismatch": false,
+          "reasons": [
+            "Layout, wordmark and copy match Google's account sign-in page.",
+            "No overlays, urgency cues or third-party frames are visible."
+          ]
+        }
+      }
+    }
+  }
+}

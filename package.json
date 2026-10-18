@@ -1,0 +1,27 @@
+{
+  "name": "phishguard",
+  "version": "0.5.18",
+  "private": true,
+  "description": "On-Device & Cloud-Tiered Behavioral Fraud Detection System",
+  "scripts": {
+    "dev": "pnpm --filter @phishguard/landing dev",
+    "build": "node scripts/bump-version.mjs && pnpm --recursive run build",
+    "rebuild": "node scripts/bump-version.mjs --force && pnpm --recursive run build",
+    "package:extension": "python scripts/package_extension.py",
+    "build:all": "node scripts/bump-version.mjs && pnpm --recursive run build && python scripts/package_extension.py",
+    "version:bump": "node scripts/bump-version.mjs --force",
+    "version:current": "node scripts/bump-version.mjs --current",
+    "test": "pnpm --recursive run test",
+    "lint": "pnpm --recursive run lint",
+    "typecheck": "pnpm --recursive run typecheck",
+    "compose:local": "node scripts/bump-version.mjs --force && docker compose -f docker-compose.local.yml up -d --build",
+    "compose:local:down": "docker compose -f docker-compose.local.yml down",
+    "compose:local:logs": "docker compose -f docker-compose.local.yml logs -f gateway",
+    "chrome:debug": "./scripts/chrome_debug.sh",
+    "mcp:devtools": "npx chrome-devtools-mcp@latest --browserUrl http://127.0.0.1:9222"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15",
+    "typescript": "^5.4.5"
+  }
+}

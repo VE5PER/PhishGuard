@@ -1,0 +1,104 @@
+{
+  "format": "student-browser-runtime-v2",
+  "modelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+  "reportSha256": "108010413752248bf5ea86b47e28e26a4a4e0976795f10452d21af2bbc0c4702",
+  "browser": "Chrome/155.0.8059.39",
+  "javascriptVersion": "15.5.35.20",
+  "headless": true,
+  "os": "linux 7.0.0-30-generic",
+  "cpu": "Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz",
+  "runtime": "Chrome MV3 service worker, production OnDeviceStudentEngine, WASM provider",
+  "scope": "Frozen local constructed fixtures; inference includes preprocessing, graph, evidence policy and explainability; no screenshot capture or real-site traffic",
+  "memoryMethod": "Linux /proc VmHWM of the unique service-worker renderer process identified through a CDP worker performance.mark tracing event; includes Chromium worker overhead",
+  "browserMemoryMeasured": true,
+  "workerPid": 3416169,
+  "baselineRssMb": 106.8046875,
+  "baselinePeakRssMb": 106.8046875,
+  "finalRssMb": 186.00390625,
+  "peakRssMb": 189.84375,
+  "peakAboveBaselineRssMb": 83.0390625,
+  "inferenceSamples": 130,
+  "iterationsPerCase": 10,
+  "latencyMsAverage": 1.3430769186753493,
+  "latencyMsP50": 1.1999998092651367,
+  "latencyMsP95": 2.1000003814697266,
+  "latencyMsMax": 3.6999998092651367,
+  "maxCpuWebError": 2.9802322387695312e-8,
+  "cases": [
+    {
+      "name": "sample1_http",
+      "action": "SAFE",
+      "modelScore": 0.00012990832328796387
+    },
+    {
+      "name": "sample1_https",
+      "action": "SAFE",
+      "modelScore": 0.00012990832328796387
+    },
+    {
+      "name": "sample2_http",
+      "action": "AMBIGUOUS",
+      "modelScore": 0.5078421831130981
+    },
+    {
+      "name": "sample2_https",
+      "action": "AMBIGUOUS",
+      "modelScore": 0.5078421831130981
+    },
+    {
+      "name": "sample2_repeated_http",
+      "action": "AMBIGUOUS",
+      "modelScore": 0.00007781386375427246
+    },
+    {
+      "name": "sample2_repeated_https",
+      "action": "AMBIGUOUS",
+      "modelScore": 0.00007781386375427246
+    },
+    {
+      "name": "sample3_http",
+      "action": "BLOCK",
+      "modelScore": 0.6754464507102966
+    },
+    {
+      "name": "sample3_https",
+      "action": "BLOCK",
+      "modelScore": 0.6754464507102966
+    },
+    {
+      "name": "landing_white_http",
+      "action": "SAFE",
+      "modelScore": 0
+    },
+    {
+      "name": "landing_white_https",
+      "action": "SAFE",
+      "modelScore": 0
+    },
+    {
+      "name": "brand_article_http",
+      "action": "SAFE",
+      "modelScore": 0
+    },
+    {
+      "name": "brand_article_https",
+      "action": "SAFE",
+      "modelScore": 0
+    },
+    {
+      "name": "synthetic_official_yahoo_login",
+      "action": "SAFE",
+      "modelScore": 0
+    }
+  ],
+  "softTargetMiB": 200,
+  "gates": {
+    "maxAverageLatencyMs": 40,
+    "maxWorkerPeakMemoryMiBExclusive": 512
+  },
+  "passed": true,
+  "failures": [],
+  "warnings": [],
+  "measuredAt": "2026-10-13T08:42:46.199Z",
+  "workspace": "/tmp/phishguard-browser-runtime-p0UJIi"
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhishGuard Extension Distribution Hub</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: #090d16; color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px 16px; box-sizing: border-box;
+    }
+    .card {
+      max-width: 620px; width: 100%; padding: 40px; border: 1px solid #1e293b;
+      border-radius: 24px; background: #0f172a; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+    .badge {
+      font-size: 11px; font-weight: 700; font-family: monospace;
+      padding: 4px 10px; border-radius: 9999px; background: rgba(16, 185, 129, 0.15);
+      color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); text-transform: uppercase;
+    }
+    p.desc { color: #94a3b8; line-height: 1.6; font-size: 14px; margin: 0 0 24px 0; }
+    .channel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+    @media (max-width: 520px) { .channel-grid { grid-template-columns: 1fr; } }
+    .channel-card {
+      border: 1px solid #1e293b; border-radius: 16px; padding: 18px;
+      background: #111c33; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .channel-card.highlight {
+      border-color: rgba(16, 185, 129, 0.5); background: rgba(6, 78, 59, 0.15);
+    }
+    .channel-tag {
+      font-size: 10px; font-family: monospace; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: #34d399; margin-bottom: 6px;
+    }
+    .channel-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .channel-desc { font-size: 12px; color: #94a3b8; line-height: 1.4; margin-bottom: 16px; }
+    a.btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px;
+      text-decoration: none; transition: transform 0.15s, opacity 0.15s;
+    }
+    a.btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    a.btn-primary { background: #10b981; color: #022c22; }
+    a.btn-secondary { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+    .guide-box {
+      border: 1px solid #1e293b; border-radius: 16px; background: #0b1324;
+      padding: 20px; margin-top: 10px;
+    }
+    .guide-title {
+      font-size: 13px; font-weight: 700; color: #cbd5e1; text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    ol.steps { margin: 0; padding-left: 20px; color: #cbd5e1; font-size: 13px; line-height: 1.8; }
+    ol.steps li b { color: #f8fafc; }
+    code {
+      background: #111c33; padding: 3px 7px; border-radius: 6px;
+      color: #38bdf8; font-family: monospace; font-size: 12px; border: 1px solid #1e293b;
+    }
+    .meta-footer {
+      margin-top: 24px; padding-top: 18px; border-top: 1px solid #1e293b;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: #64748b; font-family: monospace; flex-wrap: wrap; gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="header">
+      <h1>🛡️ PhishGuard Extension</h1>
+      <span class="badge">v0.3.0 &bull; MV3</span>
+    </div>
+    <p class="desc">
+      On-Device behavioral fraud & phishing detection system with zero keystroke capture.
+      Download the signed Chromium package or the unpacked source bundle below.
+    </p>
+
+    <div class="channel-grid">
+      <!-- Direct CRX Option -->
+      <div class="channel-card highlight">
+        <div>
+          <div class="channel-tag">⚡ Direct Install (Recommended)</div>
+          <div class="channel-title">Signed .CRX Package</div>
+          <div class="channel-desc">
+            Single-file signed Chromium package. Installs directly into Chrome via drag &amp; drop without unzipping.
+          </div>
+        </div>
+        <a class="btn btn-primary" href="download/phishguard-extension.crx" download>
+          Download .CRX (7.0 MB)
+        </a>
+      </div>
+
+      <!-- Unpacked ZIP Option -->
+      <div class="channel-card">
+        <div>
+          <div class="channel-tag" style="color: #94a3b8;">📦 Developers &amp; Audit</div>
+          <div class="channel-title">Unpacked .ZIP Bundle</div>
+          <div class="channel-desc">
+            Complete extension build for developer inspection, offline testing, or manual unzipping.
+          </div>
+        </div>
+        <a class="btn btn-secondary" href="download/phishguard-extension.zip" download>
+          Download .ZIP (7.0 MB)
+        </a>
+      </div>
+    </div>
+
+    <p class="desc">
+      <b>Automatic updates:</b> the signed .CRX updates itself on Linux, and on Windows/macOS
+      when installed by enterprise policy. Otherwise use the Chrome Web Store build:
+      <a href="download/phishguard-extension-webstore.zip" download>Web Store package (.ZIP)</a>.
+      Unpacked ZIP installs do not auto-update. Updating from v0.2.0? Install the new .CRX once over the old one; settings are kept.
+    </p>
+
+    <div class="guide-box">
+      <div class="guide-title">🚀 Direct 3-Step Setup for Google Chrome, Brave &amp; Edge</div>
+      <ol class="steps">
+        <li>
+          Open <code>chrome://extensions</code> in your browser address bar.
+        </li>
+        <li>
+          Toggle <b>Developer mode</b> to <b>ON</b> in the top-right corner.
+        </li>
+        <li>
+          <b>Drag &amp; drop</b> the downloaded <code>phishguard-extension.crx</code> file directly into the extensions window, then click <b>“Add extension”</b>.
+        </li>
+      </ol>
+    </div>
+
+    <div class="meta-footer">
+      <span>Extension ID: <code>loanjnnlfhechkonbjelmbdacmmcbagg</code></span>
+      <span>Manifest V3 Certified</span>
+    </div>
+  </main>
+</body>
+</html>

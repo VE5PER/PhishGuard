@@ -1,0 +1,35 @@
+[
+  {
+    "id": "new_phishing_datasets",
+    "title": "New public phishing datasets and benchmarks",
+    "prompt_focus": "Identify public phishing-detection datasets, feeds, and benchmarks (URL lists, HTML/DOM corpora, screenshots, brand logo sets) released or substantially updated in the last 90 days."
+  },
+  {
+    "id": "brand_impersonation_campaigns",
+    "title": "Active phishing campaigns impersonating {brand}",
+    "prompt_focus": "Find recent public threat-intelligence reports describing phishing campaigns that impersonate {brand} and list the phishing URLs or domains used.",
+    "brands": ["Microsoft", "PayPal", "DHL", "DocuSign", "Coinbase"]
+  },
+  {
+    "id": "aitm_phishing_kits",
+    "title": "Adversary-in-the-middle phishing kits",
+    "prompt_focus": "Find recent public reports on adversary-in-the-middle and phishing-as-a-service kits (for example Tycoon 2FA, EvilProxy, Mamba 2FA) that publish landing-page URLs or domains as IOCs."
+  },
+  {
+    "id": "government_advisories",
+    "title": "CERT and government phishing advisories",
+    "prompt_focus": "Find recent CERT, CISA, NCSC, or other government advisories that publish phishing URLs or domains as indicators of compromise."
+  },
+  {
+    "id": "banking_credential_phishing",
+    "title": "Banking and payment credential phishing",
+    "prompt_focus": "Find recent public reports on credential-phishing pages targeting {brand} customers, including the published phishing URLs or domains.",
+    "brands": ["Bank of America", "Chase", "Wells Fargo", "Amazon", "Apple"]
+  },
+  {
+    "id": "typosquat_registrations",
+    "title": "Brand typosquat and lookalike domain registrations",
+    "prompt_focus": "Find recent public research or feeds documenting typosquat and lookalike domain registrations used for phishing against {brand}, including the listed domains.",
+    "brands": ["Google", "Netflix", "Facebook", "LinkedIn", "Steam"]
+  }
+]

@@ -1,0 +1,151 @@
+# Node & PNPM
+node_modules/
+.pnpm-store/
+dist/
+build/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Environments, Secrets & Keys
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ML artifacts & weights
+*.onnx
+*.pt
+*.pth
+*.bin
+checkpoints/
+apps/ml-lifecycle/checkpoints/*
+!apps/ml-lifecycle/checkpoints/.gitkeep
+!apps/ml-lifecycle/checkpoints/README.md
+!apps/ml-lifecycle/checkpoints/raw/
+!apps/ml-lifecycle/checkpoints/raw/.gitkeep
+apps/ml-lifecycle/checkpoints/raw/*
+!apps/ml-lifecycle/checkpoints/candidate/
+!apps/ml-lifecycle/checkpoints/candidate/.gitkeep
+apps/ml-lifecycle/checkpoints/candidate/*
+!apps/ml-lifecycle/checkpoints/onnx/
+!apps/ml-lifecycle/checkpoints/onnx/.gitkeep
+apps/ml-lifecycle/checkpoints/onnx/*
+!apps/ml-lifecycle/checkpoints/registry/
+!apps/ml-lifecycle/checkpoints/context-recovery-*/
+# Datasets & training artifacts
+/data/*
+!/data/.gitkeep
+*.npz
+*.jsonl
+runs/
+wandb/
+mlruns/
+
+# Next.js (apps/landing)
+.next/
+out/
+next-env.d.ts
+
+# Browser Extension build output
+apps/extension/dist/
+
+# Backend
+apps/backend/static/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Packaged extension archives
+*.zip
+*.crx
+*.xpi
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor & IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.kate-swp
+.project
+.classpath
+
+# Coverage & test output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+lcov.info
+*.lcov
+
+# Temp & scratch
+tmp/
+temp/
+.tmp/
+scratch/
+
+# uv / pip
+.uv-cache/
+pip-wheel-metadata/
+
+# macOS extended attrs
+.AppleDouble
+.LSOverride
+
+# Local knowledge graph (graphify, generated)
+graphify-out/
+
+# Local OpenCode agent config/plugins
+.opencode/
+
+# Extracted model release bundle (weights distributed out-of-band)
+phishguard-model-v2.0.0/
+
+*.ipynb
+
+# Third-party agent skills (installed locally, not redistributed)
+.agents/skills/*
+!.agents/skills/phishguard-*/
+
+# Demo video project (kept locally, not published)
+/motion-graphics/

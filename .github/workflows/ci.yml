@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "ci/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-ts:
+    name: TypeScript quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - name: Enable pnpm via corepack
+        run: corepack enable && corepack prepare pnpm@9 --activate
+      - run: pnpm install --frozen-lockfile
+      # consumers import @phishguard/types from dist
+      - run: pnpm --filter @phishguard/types build
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  quality-py:
+    name: Python tests
+    runs-on: ubuntu-latest
+    # ML tests need CPU torch; this is the heaviest job.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - name: Create venv
+        run: uv venv --python 3.12 .venv
+      - name: Install CPU torch
+        run: uv pip install --python .venv/bin/python --index-url https://download.pytorch.org/whl/cpu "torch>=2.2,<3" "torchvision>=0.17,<1"
+      - name: Install workspace (editable)
+        run: >-
+          uv pip install --python .venv/bin/python
+          -e packages/types -e packages/ml-engine -e apps/backend
+          -e apps/ml-lifecycle -e apps/dataset-agent
+          pytest cryptography onnx onnxruntime
+      - name: Tests
+        # Tests below require out-of-band artifacts (frozen R3 checkpoint, v1.x
+        # model bundles, packaged extension downloads) that are not in the repo.
+        # They are skipped on a clean checkout; everything else must pass.
+        run: |
+          .venv/bin/python -m pytest \
+            packages/types packages/ml-engine apps/backend apps/ml-lifecycle apps/dataset-agent \
+            --ignore=apps/backend/tests/test_live_sample_inference.py \
+            --ignore=apps/backend/tests/test_models_api.py \
+            --ignore=apps/backend/tests/test_artifact_storage.py \
+            --ignore=apps/backend/tests/test_landing_and_download.py \
+            --ignore=apps/ml-lifecycle/tests/test_checkpoint_manager.py \
+            --ignore=apps/ml-lifecycle/tests/test_promotion.py \
+            --ignore=apps/ml-lifecycle/tests/test_context_integrity.py \
+            -q
+
+  sast:
+    name: SAST (Semgrep + Bandit)
+    runs-on: ubuntu-latest
+    continue-on-error: true # advisory initially; drop this to make it a hard gate
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: pip install semgrep bandit
+      - name: Semgrep (Python + JS/TS)
+        run: semgrep scan --config=p/default --metrics=off --sarif --output=semgrep.sarif || true
+      - name: Bandit (Python)
+        run: bandit -r packages apps -x '*/tests/*,*/node_modules/*' -ll || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: semgrep-sarif
+          path: semgrep.sarif
+          if-no-files-found: ignore
+
+  secrets:
+    name: Secret scan (Gitleaks)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Gitleaks (OSS binary)
+        run: |
+          ver="8.30.1"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${ver}/gitleaks_${ver}_linux_x64.tar.gz" | tar -xz gitleaks
+          ./gitleaks detect --source . --redact --no-banner || true
+
+  dependencies:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - name: Enable pnpm via corepack
+        run: corepack enable && corepack prepare pnpm@9 --activate
+      - run: pnpm install --frozen-lockfile
+      - name: pnpm audit (high+)
+        run: pnpm audit --audit-level=high || true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: pip-audit (Python deps)
+        run: |
+          pip install pip-audit
+          cat > /tmp/reqs.txt <<'EOF'
+          fastapi>=0.100.0
+          uvicorn>=0.23.0
+          pydantic>=2.0.0
+          sqlalchemy>=2.0.0
+          asyncpg>=0.29.0
+          aiosqlite>=0.19.0
+          httpx>=0.25.0
+          numpy
+          pillow
+          scipy
+          scikit-learn
+          onnx>=1.15.0
+          onnxruntime>=1.17.0
+          google-genai>=2.28.0,<3
+          EOF
+          pip-audit -r /tmp/reqs.txt || true
+
+  containers:
+    name: Container & IaC scan (Trivy)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Trivy config scan (Dockerfiles)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          severity: HIGH,CRITICAL
+      - name: Trivy filesystem (vulns + secrets)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+
+  # ---------------------------------------------------------------------------
+  # CodeQL / GitHub code scanning (advanced SAST) is NOT free for PRIVATE
+  # personal repositories on GitHub.com — it requires GitHub Code Security (paid,
+  # or a trial). Enable the job below only after that is available; until then
+  # the `sast` job (Semgrep/Bandit) is the free substitute.
+  #
+  # codeql:
+  #   name: CodeQL
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     security-events: write
+  #     contents: read
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       language: [python, javascript-typescript]
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with:
+  #         persist-credentials: false
+  #     - uses: github/codeql-action/init@v3
+  #       with:
+  #         languages: ${{ matrix.language }}
+  #     - uses: github/codeql-action/analyze@v3

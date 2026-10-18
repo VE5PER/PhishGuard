@@ -1,0 +1,43 @@
+{
+  "model_name": "phishguard-sota-multimodal",
+  "architecture": "PhishGuardSOTAMultimodalModel",
+  "model_type": "sota_multimodal",
+  "modalities": [
+    "url",
+    "hid_input",
+    "logo",
+    "screen",
+    "image_detection"
+  ],
+  "feature_dimensions": {
+    "url": 32,
+    "hid": 16,
+    "logo": 16,
+    "detection": 16,
+    "dynamics_channels": 5,
+    "dynamics_steps": 64,
+    "viewport_c": 3,
+    "viewport_h": 224,
+    "viewport_w": 224
+  },
+  "hyperparameters": {
+    "batch_size": 16,
+    "learning_rate": 0.0008,
+    "epochs": 10,
+    "weight_decay": 0.001,
+    "alpha": 0.65,
+    "gamma": 2.0,
+    "brier_lambda": 0.15
+  },
+  "evaluation_gates": {
+    "min_accuracy": 0.985,
+    "min_precision": 0.985,
+    "min_recall": 0.980,
+    "min_f1": 0.982,
+    "max_fpr": 0.005,
+    "min_roc_auc": 0.990,
+    "max_brier": 0.060,
+    "max_latency_ms": 30.0,
+    "max_size_mb": 5.0
+  }
+}

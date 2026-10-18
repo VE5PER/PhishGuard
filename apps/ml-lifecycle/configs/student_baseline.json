@@ -1,0 +1,22 @@
+{
+  "model_name": "phishguard-student-baseline",
+  "architecture": "DistilledStudentModel",
+  "model_type": "student",
+  "seq_length": 128,
+  "behavioral_in_channels": 6,
+  "behavioral_dim": 64,
+  "include_visual": false,
+  "hyperparameters": {
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "epochs": 10,
+    "weight_decay": 0.0001,
+    "early_stopping_patience": 3
+  },
+  "evaluation_gates": {
+    "min_accuracy": 0.95,
+    "min_f1": 0.95,
+    "max_latency_ms": 40.0,
+    "max_size_mb": 80.0
+  }
+}

@@ -1,0 +1,48 @@
+# gcloud builds submit ignores — mirrors .dockerignore, but MUST keep the two
+# committed student_model.onnx paths the build packaging needs.
+.git
+.gitignore
+.DS_Store
+Thumbs.db
+
+# Agent / local tooling / presentation artifacts
+.opencode/
+.agents/
+.vscode/
+**/*.pptx
+phishguard-model-v2.0.0/
+graphify-out/
+
+# Node / pnpm
+**/node_modules/
+**/.pnpm-store/
+**/dist/
+**/build/
+**/*.tsbuildinfo
+
+# Python
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/.pytest_cache/
+**/.coverage
+**/htmlcov/
+
+# Local secrets / overrides
+.env
+.env.local
+**/.env
+**/.env.local
+
+# Generated static (rebuilt in the image)
+apps/backend/static/
+
+# ML weights — keep only the two model files the extension/gateway build needs
+**/*.onnx
+!apps/extension/public/models/student_model.onnx
+!apps/backend/models/v2*/student_model.onnx
+**/*.pt
+**/*.pth
+**/*.bin
+**/checkpoints/

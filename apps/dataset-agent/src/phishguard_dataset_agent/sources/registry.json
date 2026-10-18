@@ -1,0 +1,131 @@
+[
+  {
+    "id": "openphish",
+    "name": "OpenPhish Community Feed",
+    "kind": "url_feed",
+    "homepage": "https://openphish.com/",
+    "access_url": "https://openphish.com/feed.txt",
+    "format": "text",
+    "labels": "phishing",
+    "trust": "verified_feed",
+    "auth_required": false,
+    "connector": "openphish",
+    "terms_url": "https://openphish.com/terms.html",
+    "notes": "Free community feed of verified phishing URLs, updated continuously."
+  },
+  {
+    "id": "tranco",
+    "name": "Tranco Top Sites",
+    "kind": "top_sites",
+    "homepage": "https://tranco-list.eu/",
+    "access_url": "https://tranco-list.eu/api/lists/date/latest",
+    "format": "json+csv",
+    "labels": "benign",
+    "trust": "verified_feed",
+    "auth_required": false,
+    "connector": "tranco",
+    "notes": "Daily top-1M domain ranking aggregated from multiple providers; benign anchors."
+  },
+  {
+    "id": "phishing_database",
+    "name": "Phishing.Database (mitchellkrogza)",
+    "kind": "url_feed",
+    "homepage": "https://github.com/Phishing-Database/Phishing.Database",
+    "access_url": "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-links-ACTIVE.txt",
+    "format": "text",
+    "labels": "phishing",
+    "trust": "community",
+    "auth_required": false,
+    "connector": "phishing_database",
+    "notes": "Large cumulative community feed (~65 MB); contains non-http entries. Disabled by default."
+  },
+  {
+    "id": "seed_snapshot",
+    "name": "Committed seed URL snapshot",
+    "kind": "url_feed",
+    "labels": "mixed",
+    "trust": "verified_feed",
+    "auth_required": false,
+    "connector": "seed_snapshot",
+    "notes": "Repo-committed snapshot (sources/seeds/seed_urls.csv): 95 OpenPhish + 100 Tranco rows captured 2026-10-13, stored defanged."
+  },
+  {
+    "id": "phishtank",
+    "name": "PhishTank",
+    "kind": "threat_intel_api",
+    "homepage": "https://phishtank.org/",
+    "access_url": "https://data.phishtank.com/data/online-valid.json",
+    "format": "json",
+    "labels": "phishing",
+    "trust": "community",
+    "auth_required": true,
+    "notes": "Verified phishing submissions; data download requires a registered app key. No connector implemented."
+  },
+  {
+    "id": "urlhaus",
+    "name": "URLhaus (abuse.ch)",
+    "kind": "url_feed",
+    "homepage": "https://urlhaus.abuse.ch/",
+    "access_url": "https://urlhaus.abuse.ch/downloads/csv_recent/",
+    "format": "csv",
+    "labels": "malware",
+    "trust": "community",
+    "auth_required": false,
+    "notes": "Lists malware distribution URLs, not phishing; registry reference only."
+  },
+  {
+    "id": "phishstats",
+    "name": "PhishStats",
+    "kind": "url_feed",
+    "homepage": "https://phishstats.info/",
+    "format": "csv",
+    "labels": "phishing",
+    "trust": "community",
+    "auth_required": false,
+    "notes": "phish_score.csv returned 404 on 2026-10-13; availability unconfirmed."
+  },
+  {
+    "id": "phishpedia",
+    "name": "Phishpedia benchmark dataset",
+    "kind": "dataset",
+    "homepage": "https://github.com/lindsey98/Phishpedia",
+    "format": "screenshots+html+urls",
+    "labels": "mixed",
+    "trust": "research",
+    "auth_required": false,
+    "notes": "30k phishing pages with URL, HTML, screenshot, and target brand (USENIX Security '21)."
+  },
+  {
+    "id": "phishintention",
+    "name": "PhishIntention",
+    "kind": "dataset",
+    "homepage": "https://github.com/lindsey98/PhishIntention",
+    "format": "screenshots+html+urls",
+    "labels": "mixed",
+    "trust": "research",
+    "auth_required": false,
+    "notes": "USENIX Security '22 dataset and implementation capturing brand and credential intention."
+  },
+  {
+    "id": "visualphishnet",
+    "name": "VisualPhish / VisualPhishNet dataset",
+    "kind": "dataset",
+    "homepage": "https://github.com/S-Abdelnabi/VisualPhishNet",
+    "format": "screenshots",
+    "labels": "mixed",
+    "trust": "research",
+    "auth_required": true,
+    "notes": "Screenshot dataset for similarity-based detection; access via email request to the authors."
+  },
+  {
+    "id": "phiusiil",
+    "name": "UCI PhiUSIIL Phishing URL Dataset",
+    "kind": "dataset",
+    "homepage": "https://archive.ics.uci.edu/dataset/967/phiusiil+phishing+url+dataset",
+    "format": "csv",
+    "labels": "mixed",
+    "trust": "research",
+    "auth_required": false,
+    "notes": "235k URLs (134,850 legitimate / 100,945 phishing) with extracted features."
+  }
+]

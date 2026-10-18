@@ -1,0 +1,78 @@
+{
+  "brand-impersonation": {
+    "latencyMs": 13.285,
+    "cached": false,
+    "request": {
+      "clientRiskScore": 0.9,
+      "clientModelVersion": "2.0.0",
+      "clientModelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+      "clientInputContract": "student-v2"
+    },
+    "verdict": {
+      "analysisId": "1b261753-f8bf-4b1c-abd0-6a88ec80c477",
+      "telemetryId": "cb51ba30-acd4-43c2-9cd2-faad74fc23a8",
+      "isPhishing": true,
+      "targetBrand": null,
+      "confidence": 0.9,
+      "actionOverride": "BLOCK",
+      "explanationReasons": [
+        "A persistent transparent overlay intercepts an interactive control",
+        "Distinct transparent traps intercept credential and submission controls"
+      ],
+      "teacherModelVersion": "cloud-evidence-v2",
+      "evaluatedAt": "2026-10-15T21:34:28.501587Z",
+      "riskScore": 0.9,
+      "screenAnalysis": null
+    }
+  },
+  "ambiguous-sso": {
+    "latencyMs": 24.524,
+    "cached": false,
+    "request": {
+      "clientRiskScore": 0.4,
+      "clientModelVersion": "2.0.0",
+      "clientModelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+      "clientInputContract": "student-v2"
+    },
+    "verdict": {
+      "analysisId": "6ca30cd2-5afb-44e3-b334-84f91c04d05e",
+      "telemetryId": "13f5ac06-f861-44e8-9bec-cb70d0e4dcd0",
+      "isPhishing": false,
+      "targetBrand": null,
+      "confidence": 0.4,
+      "actionOverride": "WARN",
+      "explanationReasons": [
+        "A persistent transparent overlay intercepts an interactive control"
+      ],
+      "teacherModelVersion": "cloud-evidence-v2",
+      "evaluatedAt": "2026-10-15T21:34:30.467129Z",
+      "riskScore": 0.4,
+      "screenAnalysis": null
+    }
+  },
+  "benign-google": {
+    "latencyMs": 59.324,
+    "cached": false,
+    "request": {
+      "clientRiskScore": 0.05,
+      "clientModelVersion": "2.0.0",
+      "clientModelSha256": "7b5d1fcb1d945c0c0e5101f264bd948ab31487a17df4a5f30690c63a2f4878c7",
+      "clientInputContract": "student-v2"
+    },
+    "verdict": {
+      "analysisId": "0f0116c2-1e31-45fb-b8d4-9f617cfedaa2",
+      "telemetryId": "5645e025-baa4-4063-a768-dc00b300e54e",
+      "isPhishing": false,
+      "targetBrand": null,
+      "confidence": 0.95,
+      "actionOverride": "ALLOW",
+      "explanationReasons": [
+        "No actionable deceptive-page evidence observed"
+      ],
+      "teacherModelVersion": "cloud-evidence-v2",
+      "evaluatedAt": "2026-10-15T21:34:32.617828Z",
+      "riskScore": 0.05,
+      "screenAnalysis": null
+    }
+  }
+}

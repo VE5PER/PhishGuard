@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phishguard-ml-engine"
+version = "0.1.0"
+description = "Machine Learning & Behavioral Distillation Engine for PhishGuard"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch",
+    "numpy",
+    "pillow>=10.0.0",
+    "scipy",
+    "scikit-learn",
+    "pydantic>=2.0.0",
+    "phishguard-types",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

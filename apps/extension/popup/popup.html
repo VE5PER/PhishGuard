@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishGuard Threat &amp; Model Inspector</title>
+  <style>
+    :root {
+      --ink-950: #08090A;
+      --ink-900: #0E0F11;
+      --ink-850: #141518;
+      --ink-800: #1B1D21;
+      --ink-700: #2A2D33;
+      --hair: rgba(255, 255, 255, 0.08);
+      --hair-strong: rgba(255, 255, 255, 0.14);
+      --text: #F5F5F7;
+      --text-2: rgba(255, 255, 255, 0.62);
+      --text-3: rgba(255, 255, 255, 0.42);
+      --safe: #C6F432;
+      --warn: #FFB224;
+      --block: #FF5A46;
+      --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 360px;
+      margin: 0;
+      padding: 0;
+      background: var(--ink-950);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .gutter { padding-left: 16px; padding-right: 16px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--hair);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon { width: 20px; height: 20px; color: var(--safe); }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-2);
+      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn-icon:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+
+    .update-banner {
+      background: rgba(255, 178, 36, 0.08);
+      border-left: 2px solid var(--warn);
+      padding: 9px 16px 9px 14px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .update-content { display: flex; align-items: center; gap: 8px; }
+    .update-text strong { color: var(--warn); display: block; font-size: 12px; }
+    .update-text span { color: var(--text-2); font-size: 11px; }
+    .update-actions { display: flex; align-items: center; gap: 6px; }
+
+    .btn-update {
+      background: var(--warn);
+      color: var(--ink-950);
+      border: none;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .btn-update:hover { opacity: 0.9; }
+
+    .btn-dismiss {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+    }
+    .btn-dismiss:hover { color: var(--text); }
+
+    .verdict { padding: 18px 16px 16px; border-bottom: 1px solid var(--hair); }
+
+    .verdict-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .badge-safe { color: var(--safe); }
+    .badge-ambiguous { color: var(--warn); }
+    .badge-block { color: var(--block); }
+    .badge-neutral { color: var(--text-2); }
+    .badge.badge-refreshing { animation: refreshPulse 1.8s ease-in-out infinite; }
+    @keyframes refreshPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    @media (prefers-reduced-motion: reduce) {
+      .badge.badge-refreshing { animation: none; }
+    }
+
+    .score-container {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .score-meta-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+    }
+
+    .score-val {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--safe);
+      font-feature-settings: "tnum" 1;
+    }
+
+    .label-mono {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+    }
+
+    .domain-name {
+      margin-top: 3px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all;
+      line-height: 1.35;
+      max-height: 34px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      cursor: help;
+    }
+
+    .score-label { margin-top: 16px; font-size: 11px; color: var(--text-3); }
+
+    .meter-bar {
+      position: relative;
+      height: 8px;
+      margin-top: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(198, 244, 50, 0.18) 0 15%, rgba(255, 178, 36, 0.18) 15% 85%, rgba(255, 90, 70, 0.18) 85% 100%);
+    }
+    .meter-bar::before,
+    .meter-bar::after {
+      content: "";
+      position: absolute;
+      top: -3px;
+      bottom: -3px;
+      width: 1px;
+      background: var(--hair-strong);
+    }
+    .meter-bar::before { left: 15%; }
+    .meter-bar::after { left: 85%; }
+
+    .meter-fill {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      width: 5%;
+      background: var(--safe);
+      border-radius: 999px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .meter-ticks { position: relative; height: 14px; margin-top: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+    .meter-ticks span { position: absolute; transform: translateX(-50%); }
+
+    .sig-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-top: 1px solid var(--hair);
+      font-size: 12px;
+    }
+    .sig-row:first-of-type { border-top: none; }
+    .sig-label { width: 74px; flex-shrink: 0; color: var(--text-2); }
+    .sig-detail { min-width: 0; color: var(--text); flex: 1; }
+    .sig-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: background-color 0.3s ease; }
+    .sig-ok { background: var(--safe); }
+    .sig-flag { background: var(--warn); }
+    .sig-skip { background: rgba(255, 255, 255, 0.3); }
+
+    .btn-cue-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: transparent;
+      border: 1px solid var(--hair-strong);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-cue-toggle:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border-color: var(--text-3);
+    }
+    .btn-cue-toggle svg {
+      transition: transform 0.2s ease;
+    }
+    .btn-cue-toggle.open svg {
+      transform: rotate(180deg);
+    }
+
+    .cue-pill {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-3);
+      border: 1px solid var(--hair);
+    }
+    .cue-pill-ok {
+      background: rgba(198, 244, 50, 0.12);
+      color: var(--safe);
+      border-color: rgba(198, 244, 50, 0.25);
+    }
+    .cue-pill-flag {
+      background: rgba(255, 178, 36, 0.15);
+      color: var(--warn);
+      border-color: rgba(255, 178, 36, 0.3);
+    }
+    .cue-pill-skip {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-3);
+    }
+
+    .explain-drawer {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .explain-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--hair);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .explain-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .explain-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+    .explain-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .explain-badge.badge-safe { background: rgba(198, 244, 50, 0.15); color: var(--safe); }
+    .explain-badge.badge-warn { background: rgba(255, 178, 36, 0.15); color: var(--warn); }
+    .explain-badge.badge-neutral { background: rgba(255, 255, 255, 0.08); color: var(--text-3); }
+
+    .explain-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 8px;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    .explain-item {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-2);
+    }
+    .explain-item span:last-child {
+      font-family: var(--font-mono);
+      color: var(--text);
+      font-size: 10.5px;
+    }
+    .explain-note {
+      font-size: 10px;
+      color: var(--text-3);
+      line-height: 1.4;
+      border-top: 1px solid var(--hair);
+      padding-top: 5px;
+      margin-top: 4px;
+    }
+
+    .include-shot { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 12px; color: var(--text); cursor: pointer; }
+    .include-shot input { width: 14px; height: 14px; accent-color: var(--safe); }
+    .include-shot-help { margin: 0 0 10px 22px; font-size: 11px; color: var(--text-3); }
+
+    .section { padding: 16px; border-bottom: 1px solid var(--hair); }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-2);
+    }
+
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .sync-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .sync-pill-online { color: var(--safe); }
+    .sync-pill-update { color: var(--warn); }
+    .sync-pill-offline { color: var(--text-3); }
+    .sync-pill-syncing { color: rgba(255, 255, 255, 0.7); }
+    .sync-pill-syncing::before { animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+    .model-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 7px 0;
+      font-size: 12px;
+      color: var(--text-2);
+      border-top: 1px solid var(--hair);
+    }
+    .model-detail-row:first-of-type { border-top: none; }
+    .model-detail-row .label { color: var(--text-3); flex-shrink: 0; }
+    .model-detail-row .value-strong { font-weight: 600; color: var(--text); }
+    .model-detail-row .value-safe { color: var(--safe); font-weight: 500; }
+    .model-detail-row .value-block { color: var(--block); font-weight: 600; }
+    .popup-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--hair-strong);
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--safe);
+      outline: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      max-width: 170px;
+    }
+    .popup-select:hover {
+      border-color: var(--text-3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .popup-select:focus {
+      border-color: var(--safe);
+      box-shadow: 0 0 0 2px rgba(198, 244, 50, 0.2);
+    }
+    .popup-select option {
+      background: #141518;
+      color: #fff;
+    }
+
+    #cloud-section { border-left: 2px solid transparent; }
+    #cloud-section.highlight { border-left-color: var(--warn); background: rgba(255, 178, 36, 0.06); }
+
+    .cloud-desc { font-size: 12px; color: var(--text-2); line-height: 1.45; margin-bottom: 10px; }
+
+    .cloud-verdict-box { padding: 8px 10px; margin-bottom: 6px; border-left: 2px solid currentColor; }
+    .cloud-verdict-title { font-size: 12px; font-weight: 700; }
+    .verdict-allow { background: rgba(198, 244, 50, 0.08); color: var(--safe); }
+    .verdict-warn { background: rgba(255, 178, 36, 0.08); color: var(--warn); }
+    .verdict-block { background: rgba(255, 90, 70, 0.08); color: var(--block); }
+
+    .cloud-reasons { font-size: 12px; color: var(--text-2); margin: 8px 0 0; padding-left: 18px; line-height: 1.5; }
+
+    .btn {
+      flex: 1;
+      background: var(--safe);
+      color: var(--ink-950);
+      border: 1px solid transparent;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.92; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--hair-strong);
+      font-weight: 600;
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.06); opacity: 1; }
+
+    .btn-block-wide { width: 100%; }
+    .btn-small { width: 100%; margin-top: 10px; padding: 7px 12px; font-size: 11px; }
+    .btn-danger-text { color: var(--block); }
+
+    .action-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--ink-950);
+      border-top: 1px solid var(--hair);
+      padding: 12px 16px 10px;
+    }
+    .btn-group { display: flex; gap: 8px; }
+    #btn-inspect { flex: 1.4; }
+
+    .status-note {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--safe);
+      font-family: var(--font-mono);
+      transition: opacity 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span>PhishGuard</span>
+    </div>
+    <button id="btn-settings" class="btn-icon" title="Open Settings &amp; Endpoints" aria-label="Settings">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+    </button>
+  </div>
+
+  <div id="update-banner" class="update-banner" style="display: none;">
+    <div class="update-content">
+      <div class="update-text">
+        <strong>New Version <span id="update-target-ver">v0.2.0</span> Available</strong>
+        <span>Installed: <span id="update-current-ver">v0.1.0</span></span>
+      </div>
+    </div>
+    <div class="update-actions">
+      <button id="btn-update-now" class="btn-update">Update</button>
+      <button id="btn-dismiss-update" class="btn-dismiss" title="Dismiss">&times;</button>
+    </div>
+  </div>
+
+  <div id="model-update-banner" class="update-banner" style="display: none;">
+    <div class="update-content">
+      <div class="update-text">
+        <strong>New Model <span id="model-target-ver">v2.0.0</span> Available</strong>
+        <span>Active: <span id="model-current-ver">v2.0.0</span></span>
+      </div>
+    </div>
+    <div class="update-actions">
+      <button id="btn-hotswap-now" class="btn-update">Hot-swap</button>
+      <button id="btn-dismiss-model-update" class="btn-dismiss" title="Dismiss">&times;</button>
+    </div>
+  </div>
+
+  <div id="suppression-banner" class="update-banner" style="display: none; background: rgba(255, 178, 36, 0.12); border-left: 2px solid var(--warn);">
+    <div class="update-content">
+      <div class="update-text">
+        <strong id="suppression-status-title">Protection Snoozed</strong>
+        <span id="suppression-status-desc">Warnings suppressed for this site</span>
+      </div>
+    </div>
+    <div class="update-actions">
+      <button id="btn-rearm-domain" class="btn-update" style="background: var(--safe); color: var(--ink-950);">Re-arm</button>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <div class="verdict-row">
+      <div id="status-badge" class="badge badge-neutral">CHECKING</div>
+      <div class="score-container">
+        <span class="score-meta-label">RISK PERCENTAGE</span>
+        <span id="risk-score" class="score-val" style="color: var(--text-2);">--</span>
+      </div>
+    </div>
+
+    <div class="domain-box">
+      <div class="label-mono">Target URL</div>
+      <div id="domain-text" class="domain-name" title="Full scanned URL">Scanning...</div>
+    </div>
+
+    <div class="score-label">Multimodal Risk Probability (0–100)</div>
+    <div class="meter-bar">
+      <div id="meter-fill" class="meter-fill" style="width: 0%; background: var(--text-3);"></div>
+    </div>
+    <div class="meter-ticks">
+      <span style="left: 15%;">15</span>
+      <span style="left: 85%;">85</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>Multimodal Signals</span>
+      </div>
+      <button id="btn-toggle-explain" class="btn-cue-toggle" type="button" title="Toggle explainability details">
+        <span id="explain-toggle-text">Explain Details</span>
+        <svg id="explain-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sig-row">
+      <span class="sig-label">Interaction</span>
+      <span id="sig-interaction-dot" class="sig-dot sig-skip"></span>
+      <span id="sig-interaction-detail" class="sig-detail">No current page assessment</span>
+      <span id="cue-interaction" class="cue-pill cue-pill-skip">NOT ASSESSED</span>
+    </div>
+    <div class="sig-row">
+      <span class="sig-label">Page</span>
+      <span id="sig-page-dot" class="sig-dot sig-skip"></span>
+      <span id="sig-page-detail" class="sig-detail">No current tab-scoped page evidence</span>
+      <span id="cue-page" class="cue-pill cue-pill-skip">NOT ASSESSED</span>
+    </div>
+    <div class="sig-row">
+      <span class="sig-label">Vision</span>
+      <span id="sig-vision-dot" class="sig-dot sig-skip"></span>
+      <span id="sig-vision-detail" class="sig-detail">No current tab-scoped visual coverage</span>
+      <span id="cue-vision" class="cue-pill cue-pill-skip">NOT ASSESSED</span>
+    </div>
+
+    <div id="signals-explain-drawer" class="explain-drawer" style="display: none;">
+      <!-- 1. Visual Stream Card -->
+      <div class="explain-card">
+        <div class="explain-card-header">
+          <div class="explain-card-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span>Visual Perception Stream</span>
+          </div>
+          <span id="explain-vision-status" class="explain-badge badge-neutral">NOT ASSESSED</span>
+        </div>
+        <div class="explain-grid">
+          <div class="explain-item">
+            <span>Perceptual Tensor</span>
+            <span id="explain-vision-tensor">--</span>
+          </div>
+          <div class="explain-item">
+            <span>Visual Risk Delta</span>
+            <span id="explain-vision-delta">--</span>
+          </div>
+          <div class="explain-item" style="grid-column: 1 / -1;">
+            <span>Layout Assessment</span>
+            <span id="explain-vision-layout">No current page assessment</span>
+          </div>
+        </div>
+        <div class="explain-note">
+          Viewport layout and brand grounding are analyzed on-device. A screenshot leaves your device only if you tick 'Include a screenshot' for a cloud verification.
+        </div>
+      </div>
+
+      <!-- 2. Interaction Stream Card -->
+      <div class="explain-card">
+        <div class="explain-card-header">
+          <div class="explain-card-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
+              <path d="M13 13l6 6"/>
+            </svg>
+            <span>Interaction Dynamics Stream</span>
+          </div>
+          <span id="explain-interaction-status" class="explain-badge badge-neutral">NOT ASSESSED</span>
+        </div>
+        <div class="explain-grid">
+          <div class="explain-item">
+            <span>Kinematic Profile</span>
+            <span id="explain-interaction-profile">No current page assessment</span>
+          </div>
+          <div class="explain-item">
+            <span>Pointer Samples</span>
+            <span id="explain-interaction-samples">--</span>
+          </div>
+          <div class="explain-item" style="grid-column: 1 / -1;">
+            <span>Privacy Posture</span>
+            <span>Flight &amp; Dwell Only (No Text)</span>
+          </div>
+        </div>
+        <div class="explain-note">
+          Evaluates pointer velocity variance, angular acceleration, and dwell timings to detect robotic automation while preserving privacy (no keystroke logging).
+        </div>
+      </div>
+
+      <!-- 3. DOM Topology Stream Card -->
+      <div class="explain-card">
+        <div class="explain-card-header">
+          <div class="explain-card-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="21" x2="9" y2="9"/>
+            </svg>
+            <span>DOM Topology Stream</span>
+          </div>
+          <span id="explain-page-status" class="explain-badge badge-neutral">NOT ASSESSED</span>
+        </div>
+        <div class="explain-grid">
+          <div class="explain-item">
+            <span>Transparent Traps</span>
+            <span id="explain-page-traps">--</span>
+          </div>
+          <div class="explain-item">
+            <span>Credential Framing</span>
+            <span id="explain-page-origin">No current page assessment</span>
+          </div>
+        </div>
+        <div class="explain-note">
+          Scans DOM layout for invisible zero-opacity clickjacking layers and cross-origin password inputs targeting credential theft.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+          <rect x="9" y="9" width="6" height="6"/>
+          <line x1="9" y1="1" x2="9" y2="4"/>
+          <line x1="15" y1="1" x2="15" y2="4"/>
+          <line x1="9" y1="20" x2="9" y2="23"/>
+          <line x1="15" y1="20" x2="15" y2="23"/>
+          <line x1="20" y1="9" x2="23" y2="9"/>
+          <line x1="20" y1="15" x2="23" y2="15"/>
+          <line x1="1" y1="9" x2="4" y2="9"/>
+          <line x1="1" y1="15" x2="4" y2="15"/>
+        </svg>
+        On-Device Model
+      </div>
+      <div id="model-sync-badge" class="sync-pill sync-pill-syncing">LOADING</div>
+    </div>
+    <div class="model-detail-row">
+      <span class="label">Model Version</span>
+      <span id="model-version-text" class="value-strong">--</span>
+    </div>
+    <div class="model-detail-row">
+      <span class="label">Extension Version</span>
+      <span id="ext-version-text" class="value-strong">v0.5.18</span>
+    </div>
+    <div class="model-detail-row" style="align-items: center;">
+      <span class="label">Warning Alert</span>
+      <select id="select-popup-warning-type" class="popup-select" title="Configure threat warning presentation type">
+        <option value="smart">Smart Adaptive</option>
+        <option value="overlay">Full-Screen Overlay</option>
+        <option value="banner">Top Warning Banner</option>
+        <option value="notification">Notification Toast</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="cloud-section" class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+        </svg>
+        <span>Cloud Verification</span>
+      </div>
+      <span id="cloud-indicator" class="sync-pill sync-pill-offline">Optional</span>
+    </div>
+
+    <div id="cloud-prompt-view">
+      <p id="cloud-desc" class="cloud-desc">
+        Local inference runs 100% on-device. Cloud escalation is strictly optional.
+      </p>
+      <p id="cloud-data-note" class="include-shot-help" style="margin-left:0">Cloud verification sends the page URL, page-structure signals and interaction timing (never keystroke characters) to the gateway for analysis by Google Gemini.</p>
+      <label class="include-shot"><input type="checkbox" id="chk-include-screenshot"> Include a screenshot of this page</label>
+      <p class="include-shot-help">Sent once for this check to the PhishGuard gateway, which forwards it to Google Gemini for analysis. PhishGuard does not store it.</p>
+      <button id="btn-escalate" class="btn btn-secondary btn-block-wide">Request Cloud Verification</button>
+    </div>
+
+    <div id="cloud-result-view" style="display: none;">
+      <div id="cloud-verdict-box" class="cloud-verdict-box verdict-allow">
+        <div class="cloud-verdict-title" id="cloud-verdict-title">ALLOW &bull; 95% Confidence</div>
+      </div>
+      <div id="cloud-brand-row" class="model-detail-row" style="display: none;">
+        <span class="label">Brand Grounding</span>
+        <span id="cloud-brand-name" class="value-block">None</span>
+      </div>
+      <div class="model-detail-row">
+        <span class="label">Cloud Verifier</span>
+        <span id="cloud-teacher-version">cloud-evidence-v2</span>
+      </div>
+      <ul id="cloud-reasons-list" class="cloud-reasons"></ul>
+      <button id="btn-re-escalate" class="btn btn-secondary btn-small">Re-verify with Cloud</button>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="btn-group">
+      <button id="btn-inspect" class="btn">Re-evaluate Page</button>
+      <button id="btn-sync" class="btn btn-secondary">Check Model Update</button>
+      <button id="btn-cancel-sync" class="btn btn-secondary btn-danger-text" style="display: none;" title="Cancel Check">Cancel</button>
+    </div>
+    <div id="model-status-note" class="status-note" style="display: none;"></div>
+  </div>
+
+  <script type="module" src="../dist/popup.js"></script>
+</body>
+</html>

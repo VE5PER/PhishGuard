@@ -1,0 +1,36 @@
+{
+  "model_name": "phishguard-student-vision",
+  "architecture": "DistilledStudentModel",
+  "model_type": "student",
+  "seq_length": 128,
+  "behavioral_in_channels": 6,
+  "behavioral_dim": 64,
+  "include_visual": true,
+  "include_page_context": true,
+  "input_contract": "student-v2",
+  "encoder_checkpoint": "apps/ml-lifecycle/checkpoints/raw/raw_ep013_step01300_20261009_202609.pt",
+  "visual_input": {
+    "size": 64,
+    "channels": "RGB",
+    "layout": "CHW",
+    "scale": "0-1",
+    "resize": "bilinear"
+  },
+  "hyperparameters": {
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "epochs": 15,
+    "weight_decay": 0.0001,
+    "early_stopping_patience": 4
+  },
+  "evaluation_gates": {
+    "min_accuracy": 0.95,
+    "min_f1": 0.95,
+    "max_latency_ms": 40.0,
+    "max_size_mb": 80.0,
+    "max_false_positive_rate": 0.005,
+    "max_brier": 0.05,
+    "max_benign_warning_count": 0,
+    "max_critical_miss_count": 0
+  }
+}

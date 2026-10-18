@@ -1,0 +1,9 @@
+{
+  "basis": "Artificial diagnostic inputs, not observed Yahoo traffic",
+  "modelSha256": "cac2762da37bfcfc93953369042e2cf7614cc64f6cfb2ddfffd47c8334c1757b",
+  "normalizedTrajectoryMissingFrame": 0.002435,
+  "pixelConvertedTrajectoryMissingFrame": 0.999999,
+  "emptyTrajectoryMissingFrame": 0.000015,
+  "emptyTrajectoryWhiteFrame": 0.996366,
+  "legacyResamplingMaxDifference": 0.33070865273475647
+}

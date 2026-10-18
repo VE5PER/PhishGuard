@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "PhishGuard",
+  "version": "0.5.18",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApmmpGSEWwdPS6+Zg/3ue2fG1xkCLZvJxFy7i6+y/dO/c+q9H3SRtac6Fzwh8JG+lCFPJ9FlyHMaXvVeEdzuxWLZBy5bHWz4DhgquTmxgMUyqJ0QTFtIMs7Jzqa24pl8ehWXmWglG5EH9zp3Jc+LNEol/bvCftVWAYSnR2u+MbrQhB//z+3r3Kf2FZwP+ZZW0RL/9BMV6tFkZRNg+N8gNF8QcjKJ9u3vVOKRNmn4XTGfTLgX/XsDrmYO/gK1ziGZdilie/cjyBv3saNBSXDtT09/kTORnKD/AwsxkR7UcTC/b7nP+7TzZbkm51OpY1Bpl2CKTqD8vuvHYxkPsafs2zwIDAQAB",
+  "description": "On-Device & Cloud-Tiered Behavioral Fraud & Phishing Detection System",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "unlimitedStorage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "PhishGuard Threat Inspector",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "dist/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "assets/*",
+        "models/*",
+        "dist/assets/*",
+        "dist/models/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
