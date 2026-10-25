@@ -14,7 +14,7 @@ dependencies = [
     "numpy",
     "pillow",
     "google-genai>=2.28.0,<3",
-    "google-adk==2.11.0",
+    "google-adk==2.12.0",
     "phishguard-types",
     "phishguard-ml-engine",
     "phishguard-ml-lifecycle",
