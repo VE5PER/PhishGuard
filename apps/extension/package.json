@@ -14,11 +14,11 @@
   "dependencies": {
     "@phishguard/types": "workspace:*",
     "onnxruntime-web": "^1.17.0",
-    "sql.js": "^1.14.2",
+    "sql.js": "^1.15.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.260",
+    "@types/chrome": "^0.3.5",
     "@types/node": "24.10.1",
     "@types/sql.js": "^1.4.11",
     "typescript": "^5.4.5",
